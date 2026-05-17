@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hub Finanze &amp; Gestione Auto</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap');
+  :root {
+    --bg:#0d0f14; --surface:#161820; --surface2:#1e2028; --border:#2a2d3a;
+    --accent:#47ffaa; --blue:#47c8ff; --red:#ff6b6b; --orange:#ffaa47;
+    --purple:#b09eff; --text:#f0f2f8; --muted:#6b7080; --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;padding-bottom:80px;}
+
+  header{background:var(--surface);border-bottom:1px solid var(--border);padding:15px 18px;display:flex;align-items:center;gap:11px;position:sticky;top:0;z-index:100;}
+  .logo{width:36px;height:36px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;color:#0d0f14;}
+  header h1{font-size:1.05rem;font-weight:800;letter-spacing:-0.5px;}
+  header span{font-size:0.68rem;color:var(--muted);font-family:'DM Mono',monospace;}
+
+  .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;}
+  .tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'Syne',sans-serif;font-weight:700;font-size:0.73rem;padding:11px 12px;cursor:pointer;white-space:nowrap;transition:all 0.2s;}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--surface2);}
+
+  .content{display:none;padding:17px;max-width:920px;margin:0 auto;}
+  .content.active{display:block;}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px;margin-bottom:18px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px;}
+  .stat-label{font-size:0.59rem;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;}
+  .stat-value{font-size:1.28rem;font-weight:800;letter-spacing:-1px;line-height:1;}
+  .stat-sub{font-size:0.59rem;color:var(--muted);font-family:'DM Mono',monospace;margin-top:3px;}
+
+  .section-title{display:flex;align-items:center;gap:8px;font-size:0.88rem;font-weight:800;margin:20px 0 11px;}
+  .section-title::before{content:'';display:block;width:4px;height:15px;background:var(--accent);border-radius:2px;}
+
+  .grid-2col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; }
+  .form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:17px;margin-bottom:13px;}
+  .form-card h2{font-size:0.88rem;font-weight:700;margin-bottom:13px;display:flex;align-items:center;gap:8px;}
+  .form-card h2::before{content:'';display:block;width:4px;height:14px;background:var(--accent);border-radius:2px;}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;}
+  
+  .field label{display:block;font-size:0.59rem;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:4px;text-transform:uppercase;}
+  .field input,.field select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.84rem;padding:8px 10px;outline:none;}
+  .field input:focus,.field select:focus{border-color:var(--accent);}
+  
+  .btn-primary{width:100%;margin-top:12px;background:var(--accent);color:#0d0f14;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-weight:800;font-size:0.86rem;padding:11px;cursor:pointer;}
+  .btn-danger{background:var(--red);color:white;}
+
+  .inv-table { width: 100%; border-collapse: collapse; font-family: 'DM Mono', monospace; font-size: 0.78rem; margin-top: 10px;}
+  .inv-table th { color: var(--muted); text-align: left; padding: 8px; border-bottom: 1px solid var(--border); font-size: 0.65rem; text-transform: uppercase;}
+  .inv-table td { padding: 10px 8px; border-bottom: 1px solid var(--border); }
+
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+  .chart-wrap{position:relative;height:190px;}
+
+  .history-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+  .history-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
+  .history-header{display:flex;justify-content:space-between;align-items:flex-start;}
+  .history-date{font-family:'DM Mono',monospace;font-size:0.8rem;font-weight:600;}
+  .history-sub2{font-size:0.62rem;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;}
+  
+  .actions-group{display:flex;gap:6px;margin-left:10px;}
+  .btn-sm{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:4px 8px;cursor:pointer;font-size:0.7rem;transition: all 0.2s;}
+  .btn-sm:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-sm.del:hover{border-color:var(--red);color:var(--red);}
+  
+  .inline-edit-form { display:grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap:8px; margin-top:10px; padding-top:10px; border-top:1px dashed var(--border); }
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--accent);color:#0d0f14;font-weight:700;font-size:0.79rem;padding:9px 20px;border-radius:40px;z-index:999;transition:transform 0.3s;pointer-events:none;}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🦅</div>
+  <div>
+    <h1>Hub Unificato: Finanze, Asset &amp; Auto</h1>
+    <span id="headerSub">Controllo Globale Liquidità, Investimenti e Spese di Esercizio</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+  <button class="tab" onclick="switchTab('investimenti')">📈 Investimenti</button>
+  <button class="tab" onclick="switchTab('movimenti')">➕ Movimenti</button>
+  <button class="tab" onclick="switchTab('auto')">🚗 Gestione Auto</button>
+  <button class="tab" onclick="switchTab('ricorrenti')">🔄 Ricorrenti</button>
+  <button class="tab" onclick="switchTab('registro')">📋 Registro Generale</button>
+</div>
+
+<!-- ==================== DASHBOARD ==================== -->
+<div id="tab-dashboard" class="content active">
+  <div class="section-title">💰 Liquidità Disponibile nei Conti</div>
+  <div class="stat-grid" id="accountStats"></div>
+
+  <div class="section-title">🚗 Sintesi Indicatori Auto</div>
+  <div class="stat-grid" id="autoDashboardStats"></div>
+
+  <div class="section-title">📊 Flussi di Cassa Mensili Globali (Inclusi Consumi Auto)</div>
+  <div class="chart-card">
+    <div class="chart-wrap"><canvas id="chCashflow"></canvas></div>
+  </div>
+</div>
+
+<!-- ==================== MONITOR INVESTIMENTI ==================== -->
+<div id="tab-investimenti" class="content">
+  <div class="section-title">💼 Stato dei tuoi Asset &amp; Performance</div>
+  <div class="form-card" style="padding: 10px; overflow-x: auto;">
+    <table class="inv-table">
+      <thead>
+        <tr>
+          <th>Piattaforma</th>
+          <th>Capitale Versato</th>
+          <th>Valore Attuale</th>
+          <th>Rendimento Assoluto</th>
+          <th>Performance</th>
+        </tr>
+      </thead>
+      <tbody id="investimentiTabella"></tbody>
+    </table>
+  </div>
+
+  <div class="grid-2col">
+    <div class="form-card">
+      <h2>📝 Aggiorna Valore Attuale Prodotti</h2>
+      <div class="form-grid">
+        <div class="field"><label>Data</label><input type="date" id="vData"></div>
+        <div class="field"><label>Asset</label>
+          <select id="vAsset">
+            <option value="Directa">Directa (ETF/Azioni)</option>
+            <option value="Mintos">Mintos (P2P)</option>
+            <option value="Crypto.com">Crypto.com</option>
+            <option value="Fondo Cometa">Fondo Cometa</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column: span 2"><label>Nuovo Valore Totale Attuale (€)</label><input type="number" id="vValore" placeholder="0.00" step="0.01"></div>
+      </div>
+      <button class="btn-primary" onclick="aggiornaValoreAsset()">Registra Aggiornamento</button>
+    </div>
+
+    <div class="chart-card">
+      <h2>Allocazione Portafoglio</h2>
+      <div class="chart-wrap" style="height: 140px;"><canvas id="chAllocazione"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section-title">⏱️ Storico Modifiche Valutazioni</div>
+  <div class="history-list" id="storicoAssetLista"></div>
+</div>
+
+<!-- ==================== INSERIMENTO MOVIMENTI GENERALI ==================== -->
+<div id="tab-movimenti" class="content">
+  <div class="form-card">
+    <h2>Registra Transazione o Giroconto</h2>
+    <div class="form-grid">
+      <div class="field"><label>Data</label><input type="date" id="fData"></div>
+      <div class="field"><label>Tipo Azione</label>
+        <select id="fTipo" onchange="AdattaFormMovimenti('fTipo', 'boxContoDestinazione', 'boxCat', 'fSubField', 'fCategoria', 'fSubCategoria')">
+          <option value="uscita">Spesa / Uscita 🔴</option>
+          <option value="entrata">Entrata / Stipendio 🟢</option>
+          <option value="giroconto">Spostamento tra conti 🔄</option>
+        </select>
+      </div>
+      <div class="field"><label>Importo (€)</label><input type="number" id="fImporto" placeholder="0.00" step="0.01"></div>
+      
+      <div class="field" id="boxContoOrigine"><label>Conto (Addebito / Ricevente)</label>
+        <select id="fContoOrigine">
+          <option value="Intesa Sanpaolo">Intesa Sanpaolo</option>
+          <option value="Revolut">Revolut</option>
+          <option value="Conto Emergenza (Revolut)">Conto Emergenza (Revolut)</option>
+        </select>
+      </div>
+
+      <div class="field hidden" id="boxContoDestinazione"><label>Conto (Accredito)</label>
+        <select id="fContoDestinazione">
+          <option value="Revolut">Revolut</option>
+          <option value="Conto Emergenza (Revolut)">Conto Emergenza (Revolut)</option>
+          <option value="Directa">Directa (Versamento)</option>
+          <option value="Mintos">Mintos (Versamento)</option>
+          <option value="Crypto.com">Crypto.com (Versamento)</option>
+          <option value="Fondo Cometa">Fondo Cometa (Versamento)</option>
+          <option value="Intesa Sanpaolo">Intesa Sanpaolo</option>
+        </select>
+      </div>
+
+      <div class="field" id="boxCat"><label>Categoria Principale</label>
+        <select id="fCategoria" onchange="handleCategoriaChange('fTipo', 'fCategoria', 'fSubField', 'fSubCategoria')"></select>
+      </div>
+      <div class="field hidden" id="fSubField"><label>Dettaglio Sottocategoria</label>
+        <select id="fSubCategoria"></select>
+      </div>
+      <div class="field" style="grid-column:1/-1"><label>Descrizione / Note</label><input type="text" id="fDesc" placeholder="Note aggiuntive..."></div>
+    </div>
+    <button class="btn-primary" onclick="aggiungiMovimento()">Salva nel Database</button>
+  </div>
+</div>
+
+<!-- ==================== SEZIONE AUTO E CONSUMI ==================== -->
+<div id="tab-auto" class="content">
+  <div class="tabs" style="margin-bottom:15px; border-radius:8px;">
+    <button class="tab active" id="subtab-btn-carburante" onclick="switchSubTab('carburante')">⛽ Carburante</button>
+    <button class="tab" id="subtab-btn-manutenzione" onclick="switchSubTab('manutenzione')">🔧 Officina</button>
+    <button class="tab" id="subtab-btn-scadenze" onclick="switchSubTab('scadenze')">📅 Scadenze</button>
+  </div>
+
+  <!-- Sotto-Sezione: Carburante -->
+  <div id="subtab-carburante" class="subcontent">
+    <div class="form-card">
+      <h2>⛽ Registra Rifornimento (Addebitato su Revolut)</h2>
+      <div class="form-grid">
+        <div class="field"><label>Data</label><input type="date" id="cData"></div>
+        <div class="field"><label>KM Totali Attuali</label><input type="number" id="cKm" placeholder="es. 124000"></div>
+        <div class="field"><label>Litri Introdotti</label><input type="number" id="cLitri" step="0.01" placeholder="0.00"></div>
+        <div class="field"><label>Spesa Totale (€)</label><input type="number" id="cSpesa" step="0.01" placeholder="0.00"></div>
+      </div>
+      <button class="btn-primary" onclick="inserisciCarburante()">Registra Rifornimento</button>
+    </div>
+    <div class="section-title">Log Rifornimenti</div>
+    <div class="history-list" id="listaCarburante"></div>
+  </div>
+
+  <!-- Sotto-Sezione: Manutenzione -->
+  <div id="subtab-manutenzione" class="subcontent" style="display:none;">
+    <div class="form-card">
+      <h2>🔧 Interventi Meccanici &amp; Gomme (Addebitato su Revolut)</h2>
+      <div class="form-grid">
+        <div class="field"><label>Data</label><input type="date" id="mData"></div>
+        <div class="field"><label>KM Intervento</label><input type="number" id="mKm" placeholder="es. 125400"></div>
+        <div class="field"><label>Tipo Spesa</label>
+          <select id="mTipo">
+            <option value="Tagliando">Tagliando Ordinario</option>
+            <option value="Freni">Freni / Pastiglie / Dischi</option>
+            <option value="Gomme">Cambio / Inversione Gomme</option>
+            <option value="Straordinaria">Riparazione Guasto / Altro</option>
+          </select>
+        </div>
+        <div class="field"><label>Costo Totale (€)</label><input type="number" id="mCosto" step="0.01" placeholder="0.00"></div>
+        <div class="field" style="grid-column: 1/-1"><label>Note Intervento / Pezzi Sostituiti</label><input type="text" id="mDesc" placeholder="es. Sostituzione olio, filtri e pastiglie anteriori"></div>
+      </div>
+      <button class="btn-primary" onclick="inserisciManutenzione()">Salva Intervento</button>
+    </div>
+    <div class="section-title">Storico Officina</div>
+    <div class="history-list" id="listaManutenzioni"></div>
+  </div>
+
+  <!-- Sotto-Sezione: Scadenze -->
+  <div id="subtab-scadenze" class="subcontent" style="display:none;">
+    <div class="grid-2col">
+      <div class="form-card">
+        <h2>📅 Stato Scadenze Fisse</h2>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;" id="scadenzeStatoScatole"></div>
+      </div>
+      <div class="form-card">
+        <h2>⚙️ Aggiorna Date Scadenze</h2>
+        <div class="form-grid" style="grid-template-columns:1fr;">
+          <div class="field"><label>Prossima Revisione Ministeriale</label><input type="date" id="scRevisione" onchange="salvaScadenzaFissa('revisione', this.value)"></div>
+          <div class="field"><label>Scadenza Bollo Auto</label><input type="date" id="scBollo" onchange="salvaScadenzaFissa('bollo', this.value)"></div>
+          <div class="field"><label>Scadenza Assicurazione</label><input type="date" id="scAssicurazione" onchange="salvaScadenzaFissa('assicurazione', this.value)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== GESTIONE SPESE RICORRENTI ==================== -->
+<div id="tab-ricorrenti" class="content">
+  <div class="form-card">
+    <h2>🔄 Imposta un'Automazione Ricorrente (Stipendio, Giroconti fissi)</h2>
+    <div class="form-grid">
+      <div class="field"><label>Data Prossimo Rilascio</label><input type="date" id="rDataInizio"></div>
+      <div class="field"><label>Tipo</label>
+        <select id="rTipo" onchange="AdattaFormRicorrenti('rTipo', 'rBoxDest')">
+          <option value="entrata">Entrata Fissa 🟢</option>
+          <option value="uscita">Uscita Fissa 🔴</option>
+          <option value="giroconto">Giroconto Automatico 🔄</option>
+        </select>
+      </div>
+      <div class="field"><label>Importo Fisso (€)</label><input type="number" id="rImporto" placeholder="0.00" step="0.01"></div>
+      <div class="field"><label>Da Conto / Conto Principale</label>
+        <select id="rContoOrigine">
+          <option value="Intesa Sanpaolo">Intesa Sanpaolo</option>
+          <option value="Revolut">Revolut</option>
+          <option value="Conto Emergenza (Revolut)">Conto Emergenza (Revolut)</option>
+        </select>
+      </div>
+      <div class="field hidden" id="rBoxDest"><label>A Conto (Solo Giroconto)</label>
+        <select id="rContoDestinazione">
+          <option value="Revolut">Revolut</option>
+          <option value="Conto Emergenza (Revolut)">Conto Emergenza (Revolut)</option>
+          <option value="Directa">Directa (Versamento)</option>
+          <option value="Mintos">Mintos (Versamento)</option>
+          <option value="Crypto.com">Crypto.com (Versamento)</option>
+          <option value="Fondo Cometa">Fondo Cometa (Versamento)</option>
+          <option value="Intesa Sanpaolo">Intesa Sanpaolo</option>
+        </select>
+      </div>
+      <div class="field"><label>Frequenza</label>
+        <select id="rFreq"><option value="mensile">Ogni Mese</option></select>
+      </div>
+      <div class="field" style="grid-column:1/-1"><label>Nome Automazione</label><input type="text" id="rDesc" placeholder="es. Stipendio automatico..."></div>
+    </div>
+    <button class="btn-primary" onclick="aggiungiAutomazione()">Attiva Automazione</button>
+  </div>
+  <div class="section-title">🔄 Automazioni Attive</div>
+  <div class="history-list" id="automazioniAttiveLista"></div>
+</div>
+
+<!-- ==================== REGISTRO GENERALE ==================== -->
+<div id="tab-registro" class="content">
+  <div class="section-title">📋 Registro Flussi e Transazioni Consolidato</div>
+  <div class="history-list" id="registroLista"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEYS = {
+  cash: 'finanze_movimenti_v2',
+  recurConfig: 'finanze_ricorrenti_config_v2',
+  assetVal: 'finanze_asset_val_v2',
+  fuel: 'carburante_v1', 
+  maint: 'manutenzione_v1', 
+  scadenze: 'auto_scadenze_fisse_v1'
+};
+
+const STRUTTURA_CATEGORIE = {
+  uscita: {
+    'Mutuo / Affitto': null,
+    'Bollette': ['Acqua', 'Corrente', 'WiFi'],
+    'Spesa alimentare': null,
+    'Investimenti': ['Directa', 'Mintos', 'Crypto.com', 'Fondo Cometa'],
+    'Altre spese': ['Svago', 'Ristoranti', 'Cura personale', 'Abbigliamento'],
+    'Abbonamenti': ['Netflix', 'Disney+', 'Amazon Prime'],
+    'Salute': null,
+    'Ristrutturazione': ['Impresa edile', 'Impresa idraulica', 'Impresa elettrica', 'Serramentista', 'Geometra'],
+    'Auto': ['Carburante', 'Manutenzione', 'Bollo', 'Assicurazione', 'Revisione']
+  },
+  entrata: { 'Stipendio': null, 'Rendite / Investimenti': null, 'Rimborsi': null, 'Altro': null }
+};
+
+const ELENCO_CONTI_COMPLETO = ["Intesa Sanpaolo", "Revolut", "Conto Emergenza (Revolut)"];
+const ELENCO_CONTI_DEST_COMPLETO = ["Revolut", "Conto Emergenza (Revolut)", "Directa (Versamento)", "Mintos (Versamento)", "Crypto.com (Versamento)", "Fondo Cometa (Versamento)", "Intesa Sanpaolo"];
+
+function ld(k){try{return JSON.parse(localStorage.getItem(k))||[];}catch{return[];}}
+function ldObj(k){try{return JSON.parse(localStorage.getItem(k))||{};}catch{return{};}}
+function sv(k,val){localStorage.setItem(k,JSON.stringify(val));}
+function today(){return new Date().toISOString().slice(0,10);}
+function fmtDate(iso){if(!iso)return'—';const[y,m,d]=iso.split('-');return`${d}/${m}/${y}`;}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach((t,i)=> {
+    if(i < 6) t.classList.toggle('active',['dashboard','investimenti','movimenti','auto','ricorrenti','registro'][i]===name);
+  });
+  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='dashboard') renderDashboard();
+  if(name==='investimenti') renderInvestimenti();
+  if(name==='auto') renderAutoSezione();
+  if(name==='ricorrenti') renderRicorrenti();
+  if(name==='registro') renderRegistro();
+}
+
+function switchSubTab(sub){
+  document.getElementById('subtab-carburante').style.display = sub==='carburante'?'block':'none';
+  document.getElementById('subtab-manutenzione').style.display = sub==='manutenzione'?'block':'none';
+  document.getElementById('subtab-scadenze').style.display = sub==='scadenze'?'block':'none';
+  
+  document.getElementById('subtab-btn-carburante').classList.toggle('active', sub==='carburante');
+  document.getElementById('subtab-btn-manutenzione').classList.toggle('active', sub==='manutenzione');
+  document.getElementById('subtab-btn-scadenze').classList.toggle('active', sub==='scadenze');
+}
+
+function AdattaFormMovimenti(idTipo, idBoxDest, idBoxCat, idSubField, idCatSel, idSubSel) {
+  const tipo = document.getElementById(idTipo).value;
+  const boxDest = document.getElementById(idBoxDest);
+  const boxCat = document.getElementById(idBoxCat);
+  const subField = document.getElementById(idSubField);
+
+  if(tipo === 'giroconto') {
+    boxDest.classList.remove('hidden');
+    boxCat.classList.add('hidden');
+    subField.classList.add('hidden');
+  } else {
+    boxDest.classList.add('hidden');
+    boxCat.classList.remove('hidden');
+    const catSelect = document.getElementById(idCatSel);
+    catSelect.innerHTML = Object.keys(STRUTTURA_CATEGORIE[tipo]).map(c => `<option value="${c}">${c}</option>`).join('');
+    handleCategoriaChange(idTipo, idCatSel, idSubField, idSubSel);
+  }
+}
+
+function handleCategoriaChange(idTipo, idCatSel, idSubField, idSubSel) {
+  const tipo = document.getElementById(idTipo).value;
+  const cat = document.getElementById(idCatSel).value;
+  const subField = document.getElementById(idSubField);
+  const subSelect = document.getElementById(idSubSel);
+  
+  if(!STRUTTURA_CATEGORIE[tipo] || !STRUTTURA_CATEGORIE[tipo][cat]) {
+    subField.classList.add('hidden');
+    subSelect.innerHTML = '';
+    return;
+  }
+  const sotto = STRUTTURA_CATEGORIE[tipo][cat];
+
+  if(sotto && sotto.length > 0) {
+    subField.classList.remove('hidden');
+    subSelect.innerHTML = sotto.map(s => `<option value="${s}">${s}</option>`).join('');
+  } else {
+    subField.classList.add('hidden');
+    subSelect.innerHTML = '';
+  }
+}
+
+function AdattaFormRicorrenti(idTipo, idBoxDest) {
+  const tipo = document.getElementById(idTipo).value;
+  const boxDest = document.getElementById(idBoxDest);
+  if(tipo === 'giroconto') boxDest.classList.remove('hidden');
+  else boxDest.classList.add('hidden');
+}
+
+// ── AGGIORNAMENTO DI MERCATO DEI PRODOTTI ────────────────────────────────────
+function aggiornaValoreAsset() {
+  const data = document.getElementById('vData').value;
+  const asset = document.getElementById('vAsset').value;
+  const valore = parseFloat(document.getElementById('vValore').value);
+
+  if(!data || isNaN(valore)) { showToast('⚠ Dati di valutazione non validi'); return; }
+
+  let store = ld(KEYS.assetVal);
+  store.push({ id: Date.now(), data, asset, valore });
+  sv(KEYS.assetVal, store);
+
+  document.getElementById('vValore').value = '';
+  showToast(`✓ Valore ${asset} registrato.`);
+  renderInvestimenti();
+}
+
+function renderInvestimenti() {
+  const movimenti = ld(KEYS.cash);
+  const valoriAttuali = ld(KEYS.assetVal);
+  
+  const platforms = ['Directa', 'Mintos', 'Crypto.com', 'Fondo Cometa'];
+  let datiTabellaHTML = '';
+  let totaliVersati = 0;
+  let totaliAttuali = 0;
+  let allocazioneDati = [];
+
+  platforms.forEach(p => {
+    let versato = 0;
+    movimenti.forEach(m => {
+      if(m.tipo === 'giroconto' && m.contoDestinazione === p + ' (Versamento)') versato += m.importo;
+      else if (m.tipo === 'giroconto' && m.contoOrigine === p + ' (Versamento)') versato -= m.importo;
+      else if (m.tipo === 'uscita' && m.sottocategoria === p) versato += m.importo;
+    });
+
+    const filtrati = valoriAttuali.filter(v => v.asset === p);
+    const snapshot = filtrati.sort((a,b) => new Date(b.data) - new Date(a.data))[0];
+    const attuale = snapshot ? snapshot.valore : versato;
+
+    const pnlAssoluto = attuale - versato;
+    const pnlPercentuale = versato > 0 ? (pnlAssoluto / versato) * 100 : 0;
+    
+    totaliVersati += versato;
+    totaliAttuali += attuale;
+    allocazioneDati.push(attuale);
+
+    const colorePnl = pnlAssoluto >= 0 ? 'var(--accent)' : 'var(--red)';
+
+    datiTabellaHTML += `
+      <tr>
+        <td><strong>${p}</strong></td>
+        <td>€${versato.toFixed(2)}</td>
+        <td>€${attuale.toFixed(2)}</td>
+        <td style="color: ${colorePnl}">€${pnlAssoluto.toFixed(2)}</td>
+        <td style="color: ${colorePnl}">${pnlPercentuale.toFixed(1)}%</td>
+      </tr>
+    `;
+  });
+
+  const totPnl = totaliAttuali - totaliVersati;
+  const totPerc = totaliVersati > 0 ? (totPnl / totaliVersati) * 100 : 0;
+  datiTabellaHTML += `
+    <tr style="border-top: 2px solid var(--border); font-weight: bold; background: var(--surface2)">
+      <td>TOTALE PORTAFOGLIO</td>
+      <td>€${totaliVersati.toFixed(2)}</td>
+      <td>€${totaliAttuali.toFixed(2)}</td>
+      <td style="color: ${totPnl >= 0 ? 'var(--accent)' : 'var(--red)'}">€${totPnl.toFixed(2)}</td>
+      <td style="color: ${totPnl >= 0 ? 'var(--accent)' : 'var(--red)'}">${totPerc.toFixed(1)}%</td>
+    </tr>
+  `;
+
+  document.getElementById('investimentiTabella').innerHTML = datiTabellaHTML;
+
+  // Grafico Allocazione
+  const ctxPie = document.getElementById('chAllocazione');
+  if(ctxPie) {
+    if(window.pieChartInstance) window.pieChartInstance.destroy();
+    window.pieChartInstance = new Chart(ctxPie, {
+      type: 'doughnut',
+      data: {
+        labels: platforms,
+        datasets: [{
+          data: allocazioneDati,
+          backgroundColor: ['#47c8ff', '#ffaa47', '#b09eff', '#47ffaa'],
+          borderWidth: 0
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'right', labels: {color:'#fff', font:{size:9}} } } }
+    });
+  }
+
+  const storicoContainer = document.getElementById('storicoAssetLista');
+  const storicoOrdinato = [...valoriAttuali].sort((a,b) => new Date(b.data) - new Date(a.data));
+  if(!storicoOrdinato.length) {
+    storicoContainer.innerHTML = '<div style="color:var(--muted); font-size:0.75rem;">Nessuna modifica inserita.</div>';
+  } else {
+    storicoContainer.innerHTML = storicoOrdinato.map(v => `
+      <div class="history-item" id="asset-item-${v.id}">
+        <div class="history-header">
+          <div>
+            <strong>${v.asset}</strong> · €${v.valore.toFixed(2)}
+            <div class="history-sub2">Rilevato il: ${fmtDate(v.data)}</div>
+          </div>
+          <div class="actions-group">
+            <button class="btn-sm" onclick="abilitaModificaAsset(${v.id})">✍️</button>
+            <button class="btn-sm del" onclick="eliminaAsset(${v.id})">✕</button>
+          </div>
+        </div>
+        <div id="edit-asset-box-${v.id}" class="hidden"></div>
+      </div>
+    `).join('');
+  }
+}
+
+function abilitaModificaAsset(id) {
+  const store = ld(KEYS.assetVal); const asset = store.find(a => a.id === id); if(!asset) return;
+  const box = document.getElementById(`edit-asset-box-${id}`); box.classList.remove('hidden');
+  box.innerHTML = `
+    <div class="inline-edit-form">
+      <div class="field"><label>Data</label><input type="date" id="edit-as-data-${id}" value="${asset.data}"></div>
+      <div class="field"><label>Valore attuale (€)</label><input type="number" id="edit-as-val-${id}" value="${asset.valore}" step="0.01"></div>
+      <div class="field" style="display:flex; align-items:flex-end;"><button class="btn-primary" style="margin:0; padding:7px;" onclick="salvaModificaAsset(${id})">Salva</button></div>
+    </div>`;
+}
+function salvaModificaAsset(id) {
+  let store = ld(KEYS.assetVal); const idx = store.findIndex(a => a.id === id); if(idx === -1) return;
+  const nuevaData = document.getElementById(`edit-as-data-${id}`).value;
+  const nuovoVal = parseFloat(document.getElementById(`edit-as-val-${id}`).value);
+  if(!nuevaData || isNaN(nuovoVal)) { showToast('⚠ Valori non validi'); return; }
+  store[idx].data = nuevaData; store[idx].valore = nuovoVal; sv(KEYS.assetVal, store);
+  showToast('✓ Modifica salvata'); renderInvestimenti();
+}
+function eliminaAsset(id) {
+  let store = ld(KEYS.assetVal); store = store.filter(a => a.id !== id); sv(KEYS.assetVal, store);
+  showToast('✓ Valutazione rimossa'); renderInvestimenti();
+}
+
+// ── LOGICA AUTO E CONSUMI (INTEGRATA NEI CONTI) ──────────────────────────────
+function inserisciCarburante() {
+  const data = document.getElementById('cData').value;
+  const km = parseInt(document.getElementById('cKm').value);
+  const litri = parseFloat(document.getElementById('cLitri').value);
+  const spesa = parseFloat(document.getElementById('cSpesa').value);
+
+  if(!data || isNaN(km) || isNaN(litri) || isNaN(spesa)) { showToast('⚠ Campi carburante non validi'); return; }
+
+  let store = ld(KEYS.fuel);
+  store.push({ id: Date.now(), data, km, litri, spesa });
+  sv(KEYS.fuel, store);
+
+  document.getElementById('cKm').value = ''; document.getElementById('cLitri').value = ''; document.getElementById('cSpesa').value = '';
+  showToast('⛽ Rifornimento salvato ed inserito in Revolut');
+  renderAutoSezione();
+  renderDashboard();
+}
+
+function inserisciManutenzione() {
+  const data = document.getElementById('mData').value;
+  const km = parseInt(document.getElementById('mKm').value);
+  const tipo = document.getElementById('mTipo').value;
+  const costo = parseFloat(document.getElementById('mCosto').value);
+  const desc = document.getElementById('mDesc').value;
+
+  if(!data || isNaN(km) || isNaN(costo)) { showToast('⚠ Campi intervento non validi'); return; }
+
+  let store = ld(KEYS.maint);
+  store.push({ id: Date.now(), data, km, tipo, costo, intervento: desc });
+  sv(KEYS.maint, store);
+
+  document.getElementById('mKm').value = ''; document.getElementById('mCosto').value = ''; document.getElementById('mDesc').value = '';
+  showToast('🔧 Officina: Intervento registrato in Revolut');
+  renderAutoSezione();
+  renderDashboard();
+}
+
+function salvaScadenzaFissa(chiave, data) {
+  let obj = ldObj(KEYS.scadenze);
+  obj[chiave] = data;
+  sv(KEYS.scadenze, obj);
+  showToast('📅 Scadenza aggiornata');
+  renderAutoSezione();
+}
+
+function renderAutoSezione() {
+  // Rifornimenti
+  const carbu = ld(KEYS.fuel).sort((a,b) => new Date(b.data) - new Date(a.data));
+  const containerC = document.getElementById('listaCarburante');
+  if(!carbu.length) containerC.innerHTML = '<div style="color:var(--muted); font-size:0.75rem;">Nessun rifornimento memorizzato.</div>';
+  else {
+    containerC.innerHTML = carbu.map((c, idx) => {
+      let consumoTesto = "Primo pieno (Calcolo al prossimo)";
+      if (idx < carbu.length - 1) {
+        const precedente = carbu[idx + 1];
+        const kmPercorsi = c.km - precedente.km;
+        if(kmPercorsi > 0) {
+          const cons = (kmPercorsi / c.litri).toFixed(2);
+          consumoTesto = `Consumo: ${cons} km/L (${kmPercorsi} km percorsi)`;
+        }
+      }
+      return `
+        <div class="history-item">
+          <div class="history-header">
+            <div>
+              <strong>€${c.spesa.toFixed(2)}</strong> · ${c.litri.toFixed(2)}L a ${c.km} KM
+              <div class="history-sub2">${fmtDate(c.data)} | ${consumoTesto}</div>
+            </div>
+            <button class="btn-sm del" onclick="eliminaCarburante(${c.id})">✕</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // Manutenzioni
+  const officina = ld(KEYS.maint).sort((a,b) => new Date(b.data) - new Date(a.data));
+  const containerM = document.getElementById('listaManutenzioni');
+  if(!officina.length) containerM.innerHTML = '<div style="color:var(--muted); font-size:0.75rem;">Nessun intervento memorizzato.</div>';
+  else {
+    containerM.innerHTML = officina.map(m => `
+      <div class="history-item">
+        <div class="history-header">
+          <div>
+            <strong>${m.tipo} · €${m.costo.toFixed(2)}</strong> a ${m.km} KM
+            <div class="history-sub2">${fmtDate(m.data)} | Note: ${m.intervento||'Nessuna'}</div>
+          </div>
+          <button class="btn-sm del" onclick="eliminaManutenzione(${m.id})">✕</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // Scadenze Scatole visive
+  const scadenze = ldObj(KEYS.scadenze);
+  const scBox = document.getElementById('scadenzeStatoScatole');
+  
+  const calcolaScatola = (titolo, dataIso) => {
+    if(!dataIso) return `<div style="font-size:0.75rem; color:var(--muted)">${titolo}: <span style="color:var(--orange)">Non configurata</span></div>`;
+    const diff = new Date(dataIso) - new Date();
+    const giorni = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    let col = 'var(--accent)';
+    if(giorni < 0) col = 'var(--red)';
+    else if(giorni < 30) col = 'var(--orange)';
+    return `
+      <div style="background:var(--surface2); padding:10px; border-radius:8px; border-left:3px solid ${col}">
+        <div style="font-size:0.65rem; text-transform:uppercase; color:var(--muted);">${titolo}</div>
+        <div style="font-size:0.85rem; font-weight:bold; font-family:'DM Mono'">${fmtDate(dataIso)}</div>
+        <div style="font-size:0.65rem; color:${col}">${giorni < 0 ? 'SCADUTO DA '+Math.abs(giorni)+' GG' : 'Mancano '+giorni+' giorni'}</div>
+      </div>`;
+  };
+
+  scBox.innerHTML = `
+    ${calcolaScatola('Revisione Ministeriale', scadenze.revisione)}
+    ${calcolaScatola('Bollo Auto', scadenze.bollo)}
+    ${calcolaScatola('Assicurazione', scadenze.assicurazione)}
+  `;
+
+  document.getElementById('scRevisione').value = scadenze.revisione || '';
+  document.getElementById('scBollo').value = scadenze.bollo || '';
+  document.getElementById('scAssicurazione').value = scadenze.assicurazione || '';
+}
+
+function eliminaCarburante(id) { let s = ld(KEYS.fuel); s = s.filter(x => x.id !== id); sv(KEYS.fuel, s); renderAutoSezione(); renderDashboard(); showToast('✓ Record rimosso'); }
+function eliminaManutenzione(id) { let s = ld(KEYS.maint); s = s.filter(x => x.id !== id); sv(KEYS.maint, s); renderAutoSezione(); renderDashboard(); showToast('✓ Record rimosso'); }
+
+// ── FLUSSI E MOVIMENTI REGISTRO COMPLETO ─────────────────────────────────────
+function aggiungiMovimento() {
+  const data = document.getElementById('fData').value;
+  const tipo = document.getElementById('fTipo').value;
+  const importo = parseFloat(document.getElementById('fImporto').value);
+  const cOrigine = document.getElementById('fContoOrigine').value;
+  const cDest = document.getElementById('fContoDestinazione').value;
+  const cat = document.getElementById('fCategoria').value;
+  const subSelect = document.getElementById('fSubCategoria');
+  const subField = document.getElementById('fSubField');
+  const subCat = !subField.classList.contains('hidden') ? subSelect.value : null;
+  const desc = document.getElementById('fDesc').value;
+
+  if(!data || isNaN(importo)) { showToast('⚠ Data o importo mancanti'); return; }
+
+  const arr = ld(KEYS.cash);
+  arr.push({ id: Date.now(), data, tipo, importo, contoOrigine: cOrigine, contoDestinazione: tipo==='giroconto'?cDest:null, categoria: tipo!=='giroconto'?cat:null, sottocategoria: subCat, descrizione: desc });
+  sv(KEYS.cash, arr);
+  
+  document.getElementById('fImporto').value = ''; document.getElementById('fDesc').value = '';
+  showToast('✓ Movimento inserito');
+  switchTab('dashboard');
+}
+
+function ottieniTuttiIMovimenti() {
+  let lista = ld(KEYS.cash).map(m => ({ ...m, provenienza: 'casa' }));
+  if(!lista.every(m => m.id)) { lista = lista.map((m, i) => ({ ...m, id: m.id || (Date.now()+i) })); }
+  
+  // Integrazione automatica dei record auto salvati su Revolut
+  ld(KEYS.fuel).forEach(f => lista.push({ id: f.id, data: f.data, tipo: 'uscita', importo: f.spesa||0, contoOrigine: 'Revolut', categoria: 'Auto', sottocategoria: 'Carburante', provenienza: 'auto', descrizione: `Pieno Carburante (${f.km} KM)` }));
+  ld(KEYS.maint).forEach(m => lista.push({ id: m.id, data: m.data, tipo: 'uscita', importo: m.costo||0, contoOrigine: 'Revolut', categoria: 'Auto', sottocategoria: 'Manutenzione', provenienza: 'auto', descrizione: `Officina: ${m.intervento||m.tipo} (${m.km} KM)` }));
+  
+  return lista.sort((a,b) => new Date(b.data) - new Date(a.data));
+}
+
+function calcolaSaldiConti(tuttiI_Movimenti) {
+  let saldi = { 'Intesa Sanpaolo': 0, 'Revolut': 0, 'Conto Emergenza (Revolut)': 0 };
+  tuttiI_Movimenti.forEach(m => {
+    if(m.tipo === 'entrata') { if(saldi[m.contoOrigine] !== undefined) saldi[m.contoOrigine] += m.importo; }
+    else if(m.tipo === 'uscita') { if(saldi[m.contoOrigine] !== undefined) saldi[m.contoOrigine] -= m.importo; }
+    else if(m.tipo === 'giroconto') {
+      if(saldi[m.contoOrigine] !== undefined) saldi[m.contoOrigine] -= m.importo;
+      if(saldi[m.contoDestinazione] !== undefined) saldi[m.contoDestinazione] += m.importo;
+    }
+  });
+  return saldi;
+}
+
+let lineChartInstance = null;
+function renderDashboard() {
+  const tutti = ottieniTuttiIMovimenti();
+  const saldi = calcolaSaldiConti(tutti);
+
+  // Rendiamo i conti visibili
+  document.getElementById('accountStats').innerHTML = Object.keys(saldi).map(c => `
+    <div class="stat-card">
+      <div class="stat-label">${c}</div>
+      <div class="stat-value" style="color:var(--blue)">€${saldi[c].toFixed(2)}</div>
+      <div class="stat-sub">Disponibilità reale liquida</div>
+    </div>`).join('');
+
+  // Statistiche Auto sintetiche
+  const f = ld(KEYS.fuel); const m = ld(KEYS.maint);
+  const totSpesoCarb = f.reduce((acc,curr)=>acc+curr.spesa, 0);
+  const totSpesoMaint = m.reduce((acc,curr)=>acc+curr.costo, 0);
+  const ultimoKm = f.length ? Math.max(...f.map(x=>x.km)) : (m.length ? Math.max(...m.map(x=>x.km)) : 0);
+
+  document.getElementById('autoDashboardStats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Carburante Totale</div>
+      <div class="stat-value" style="color:var(--orange)">€${totSpesoCarb.toFixed(2)}</div>
+      <div class="stat-sub">Spesa cumulata</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Manutenzioni Officina</div>
+      <div class="stat-value" style="color:var(--purple)">€${totSpesoMaint.toFixed(2)}</div>
+      <div class="stat-sub">Interventi registrati</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Odometro Stimato</div>
+      <div class="stat-value" style="color:var(--text)">${ultimoKm ? ultimoKm + ' KM' : '—'}</div>
+      <div class="stat-sub">Ultimo dato letto</div>
+    </div>`;
+
+  const ctx = document.getElementById('chCashflow'); if(!ctx) return;
+  if(lineChartInstance) lineChartInstance.destroy();
+  let eMese = Array(12).fill(0), uMese = Array(12).fill(0);
+  tutti.forEach(m => {
+    const mese = new Date(m.data).getMonth();
+    if(!isNaN(mese)) {
+      if(m.tipo === 'entrata') eMese[mese] += m.importo;
+      else if(m.tipo === 'uscita') uMese[mese] += m.importo;
+    }
+  });
+  lineChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'], datasets: [{label:'Entrate', data:eMese, backgroundColor:'#47ffaa'},{label:'Uscite (Inclusa Auto)', data:uMese, backgroundColor:'#ff6b6b'}] },
+    options: { responsive:true, maintainAspectRatio:false, scales:{x:{grid:{color:'#2a2d3a'}},y:{grid:{color:'#2a2d3a'}}} }
+  });
+}
+
+function renderRegistro() {
+  const tutti = ottieniTuttiIMovimenti();
+  const container = document.getElementById('registroLista');
+  if(!tutti.length) { container.innerHTML = '<div>Nessun flusso presente nel registro.</div>'; return; }
+
+  container.innerHTML = tutti.map((m) => {
+    let infoFlusso = '';
+    if(m.tipo === 'giroconto') infoFlusso = `🔄 Giroconto: ${m.contoOrigine} ➔ ${m.contoDestinazione}`;
+    else infoFlusso = `💳 Conto: ${m.contoOrigine} | Cat: ${m.sottocategoria ? `${m.categoria} ➔ ${m.sottocategoria}` : m.categoria||'Automazione'}`;
+
+    return `
+      <div class="history-item" id="reg-item-${m.id}">
+        <div class="history-header">
+          <div>
+            <div class="history-date">${fmtDate(m.data)} · ${m.descrizione||'Senza descrizione'}</div>
+            <div class="history-sub2">${infoFlusso}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-weight:bold; color:${m.tipo==='entrata'?'var(--accent)':m.tipo==='uscita'?'var(--red)':'var(--blue)'}">
+              ${m.tipo==='entrata'?'+':m.tipo==='uscita'?'-':''} €${m.importo.toFixed(2)}
+            </span>
+            ${m.provenienza==='casa' ? `
+              <div class="actions-group">
+                <button class="btn-sm" onclick="abilitaModificaRegistro(${m.id})">✍️</button>
+                <button class="btn-sm del" onclick="eliminaRegistro(${m.id})">✕</button>
+              </div>
+            `: `<span style="font-size:0.55rem; color:var(--orange); font-family:'DM Mono'; font-weight:bold;">[AUTO]</span>`}
+          </div>
+        </div>
+        <div id="edit-reg-box-${m.id}" class="hidden"></div>
+      </div>`;
+  }).join('');
+}
+
+function abilitaModificaRegistro(id) {
+  const store = ld(KEYS.cash); const m = store.find(item => item.id === id); if(!m) return;
+  const box = document.getElementById(`edit-reg-box-${id}`); box.classList.remove('hidden');
+  const rnd = id;
+  box.innerHTML = `
+    <div class="inline-edit-form" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
+      <div class="field"><label>Data</label><input type="date" id="ed-reg-data-${rnd}" value="${m.data}"></div>
+      <div class="field"><label>Tipo</label>
+        <select id="ed-reg-tipo-${rnd}" onchange="AdattaFormMovimenti('ed-reg-tipo-${rnd}', 'ed-reg-bdest-${rnd}', 'ed-reg-bcat-${rnd}', 'ed-reg-bsub-${rnd}', 'ed-reg-cat-${rnd}', 'ed-reg-sub-${rnd}')">
+          <option value="uscita" ${m.tipo==='uscita'?'selected':''}>Uscita 🔴</option>
+          <option value="entrata" ${m.tipo==='entrata'?'selected':''}>Entrata 🟢</option>
+          <option value="giroconto" ${m.tipo==='giroconto'?'selected':''}>Giroconto 🔄</option>
+        </select>
+      </div>
+      <div class="field"><label>Importo (€)</label><input type="number" id="ed-reg-imp-${rnd}" value="${m.importo}" step="0.01"></div>
+      <div class="field"><label>Origine</label>
+        <select id="ed-reg-orig-${rnd}">
+          ${ELENCO_CONTI_COMPLETO.map(c => `<option value="${c}" ${m.contoOrigine===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field" id="ed-reg-bdest-${rnd}"><label>Destinazione</label>
+        <select id="ed-reg-dest-${rnd}">
+          ${ELENCO_CONTI_DEST_COMPLETO.map(c => `<option value="${c}" ${m.contoDestinazione===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field" id="ed-reg-bcat-${rnd}"><label>Categoria</label>
+        <select id="ed-reg-cat-${rnd}" onchange="handleCategoriaChange('ed-reg-tipo-${rnd}', 'ed-reg-cat-${rnd}', 'ed-reg-bsub-${rnd}', 'ed-reg-sub-${rnd}')"></select>
+      </div>
+      <div class="field" id="ed-reg-bsub-${rnd}"><label>Sottocategoria</label>
+        <select id="ed-reg-sub-${rnd}"></select>
+      </div>
+      <div class="field" style="grid-column:1/-1"><label>Note</label><input type="text" id="ed-reg-desc-${rnd}" value="${m.descrizione||''}"></div>
+      <div class="field" style="grid-column:1/-1; display:flex; justify-content:flex-end;"><button class="btn-primary" style="margin:0; max-width:150px;" onclick="salvaModificaRegistro(${id})">Salva</button></div>
+    </div>`;
+  
+  AdattaFormMovimenti(`ed-reg-tipo-${rnd}`, `ed-reg-bdest-${rnd}`, `ed-reg-bcat-${rnd}`, `ed-reg-bsub-${rnd}`, `ed-reg-cat-${rnd}`, `ed-reg-sub-${rnd}`);
+  if(m.categoria) {
+    document.getElementById(`ed-reg-cat-${rnd}`).value = m.categoria;
+    handleCategoriaChange(`ed-reg-tipo-${rnd}`, `ed-reg-cat-${rnd}`, `ed-reg-bsub-${rnd}`, `ed-reg-sub-${rnd}`);
+    if(m.sottocategoria) document.getElementById(`ed-reg-sub-${rnd}`).value = m.sottocategoria;
+  }
+}
+
+function salvaModificaRegistro(id) {
+  let store = ld(KEYS.cash); const idx = store.findIndex(item => item.id === id); if(idx === -1) return;
+  const data = document.getElementById(`ed-reg-data-${id}`).value;
+  const tipo = document.getElementById(`ed-reg-tipo-${id}`).value;
+  const imp = parseFloat(document.getElementById(`ed-reg-imp-${id}`).value);
+  const orig = document.getElementById(`ed-reg-orig-${id}`).value;
+  const dest = document.getElementById(`ed-reg-dest-${id}`).value;
+  const cat = document.getElementById(`ed-reg-cat-${id}`).value;
+  const sub = document.getElementById(`ed-reg-sub-${id}`).value;
+  const desc = document.getElementById(`ed-reg-desc-${id}`).value;
+
+  if(!data || isNaN(imp)) { showToast('⚠ Campi non validi'); return; }
+  store[idx] = { id, data, tipo, importo: imp, contoOrigine: orig, contoDestinazione: tipo==='giroconto'?dest:null, categoria: tipo!=='giroconto'?cat:null, sottocategoria: (tipo!=='giroconto' && document.getElementById(`ed-reg-bsub-${id}`).classList.contains('hidden') === false) ? sub : null, descrizione: desc };
+  sv(KEYS.cash, store); showToast('✓ Movimento aggiornato'); renderRegistro(); renderDashboard();
+}
+function eliminaRegistro(id) { let store = ld(KEYS.cash); store = store.filter(m => m.id !== id); sv(KEYS.cash, store); showToast('✓ Record rimosso'); renderRegistro(); renderDashboard(); }
+
+// ── AUTOMAZIONI RICORRENTI ───────────────────────────────────────────────────
+function eseguiControlloAutomazioni() {
+  const oggiStr = today(); const oggi = new Date(oggiStr);
+  let regole = ld(KEYS.recurConfig); let movimenti = ld(KEYS.cash); let modificato = false;
+  regole.forEach(regola => {
+    let prossimaData = new Date(regola.prossimaScadenza);
+    while (prossimaData <= oggi) {
+      movimenti.push({ id: Date.now() + Math.random(), data: prossimaData.toISOString().slice(0,10), tipo: regola.tipo, importo: regola.importo, contoOrigine: regola.contoOrigine, contoDestinazione: regola.tipo === 'giroconto' ? regola.contoDestinazione : null, categoria: regola.tipo !== 'giroconto' ? 'Automazione' : null, sottocategoria: null, descrizione: `${regola.descrizione} (Eseguito Automaticamente)` });
+      prossimaData.setMonth(prossimaData.getMonth() + 1); regola.prossimaScadenza = prossimaData.toISOString().slice(0,10); modificato = true;
+    }
+  });
+  if (modificato) { sv(KEYS.cash, movimenti); sv(KEYS.recurConfig, regole); }
+}
+function aggiungiAutomazione() {
+  const data = document.getElementById('rDataInizio').value; const tipo = document.getElementById('rTipo').value; const importo = parseFloat(document.getElementById('rImporto').value); const cOrigine = document.getElementById('rContoOrigine').value; const cDest = document.getElementById('rContoDestinazione').value; const desc = document.getElementById('rDesc').value;
+  if(!data || isNaN(importo) || !desc) { showToast('⚠ Campi incompleti'); return; }
+  const regole = ld(KEYS.recurConfig); regole.push({ id: Date.now(), tipo, importo, contoOrigine: cOrigine, contoDestinazione: cDest, frequenza: 'mensile', descrizione: desc, prossimaScadenza: data });
+  sv(KEYS.recurConfig, regole); showToast('🔄 Automazione salvata'); eseguiControlloAutomazioni(); renderRicorrenti();
+}
+function renderRicorrenti() {
+  const regole = ld(KEYS.recurConfig); const container = document.getElementById('automazioniAttiveLista');
+  if(!regole.length) { container.innerHTML = '<div style="color:var(--muted); font-size:0.75rem;">Nessun flusso automatico.</div>'; return; }
+  container.innerHTML = regole.map(r => `
+    <div class="history-item" id="auto-item-${r.id}">
+      <div class="history-header">
+        <div><strong>${r.descrizione}</strong> · €${r.importo.toFixed(2)}<div style="font-size:0.65rem; color:var(--muted);">Da: ${r.contoOrigine} ${r.tipo==='giroconto'?`➔ A: ${r.contoDestinazione}`:''} | Prossimo: ${fmtDate(r.prossimaScadenza)}</div></div>
+        <button class="btn-sm del" onclick="eliminaAutomazione(${r.id})">✕</button>
+      </div>
+    </div>`).join('');
+}
+function eliminaAutomazione(id) { let regole = ld(KEYS.recurConfig); regole = regole.filter(r => r.id !== id); sv(KEYS.recurConfig, regole); renderRicorrenti(); showToast('✓ Automazione disattivata'); }
+
+window.onload = function() {
+  document.getElementById('fData').value = today();
+  document.getElementById('vData').value = today();
+  document.getElementById('cData').value = today();
+  document.getElementById('mData').value = today();
+  document.getElementById('rDataInizio').value = today();
+  AdattaFormMovimenti('fTipo', 'boxContoDestinazione', 'boxCat', 'fSubField', 'fCategoria', 'fSubCategoria');
+  AdattaFormRicorrenti('rTipo', 'rBoxDest');
+  eseguiControlloAutomazioni();
+  renderDashboard();
+};
+</script>
+</body>
+</html>
