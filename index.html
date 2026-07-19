@@ -1,1485 +1,394 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Hub Finanze &amp; Gestione Auto</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght=400;500&family=Syne:wght=400;600;700;800&display=swap');
-  
-  :root {
-    --bg:#0d0f14; --surface:#161820; --surface2:#1e2028; --border:#2a2d3a;
-    --accent:#47ffaa; --blue:#47c8ff; --red:#ff6b6b; --orange:#ffaa47;
-    --purple:#b09eff; --text:#f0f2f8; --muted:#6b7080; --radius:14px;
-  }
-  
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-  
-  body {
-    background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; min-height:100vh;
-    padding-bottom:calc(40px + env(safe-area-inset-bottom, 20px));
-    padding-top:env(safe-area-inset-top, 0px);
-  }
-
-  header {
-    background:var(--surface); border-bottom:1px solid var(--border); padding:24px 16px 16px;
-    display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:100;
-  }
-  .logo{width:40px;height:40px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#0d0f14;}
-  header h1{font-size:1.1rem;font-weight:800;letter-spacing:-0.5px;}
-  header span{font-size:0.65rem;color:var(--muted);font-family:'DM Mono',monospace;}
-
-  .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;padding:14px 18px;cursor:pointer;white-space:nowrap;transition:all 0.2s;}
-  .tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--surface2);}
-
-  .content{display:none;padding:16px;max-width:1100px;margin:0 auto;}
-  .content.active{display:block;}
-
-  .filter-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 16px; }
-  .filter-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-
-  .stat-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .stat-card.total-card { border: 2px solid var(--accent); background: var(--surface2); }
-  .stat-label { font-size: 0.75rem; color: var(--text); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
-  .stat-value { font-size: clamp(1rem, 4vw, 1.3rem); font-weight: 800; font-family: 'DM Mono', monospace; letter-spacing: -0.5px; text-align: right; white-space: nowrap; }
-
-  @media(min-width: 600px) { .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; } }
-
-  .section-title{display:flex;align-items:center;gap:8px;font-size:0.95rem;font-weight:800;margin:24px 0 12px;}
-  .section-title::before{content:'';display:block;width:4px;height:16px;background:var(--accent);border-radius:2px;}
-
-  .grid-2col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
-  .form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px;}
-  .form-card h2{font-size:0.95rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
-  .form-card h2::before{content:'';display:block;width:4px;height:14px;background:var(--accent);border-radius:2px;}
-  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;}
-  
-  .field label{display:block;font-size:0.6rem;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:6px;text-transform:uppercase;}
-  .field input,.field select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.9rem;padding:10px 12px;outline:none;-webkit-appearance:none;}
-  .field input:focus,.field select:focus{border-color:var(--accent);}
-  
-  .btn-primary{width:100%;margin-top:16px;background:var(--accent);color:#0d0f14;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-weight:800;font-size:0.9rem;padding:12px;cursor:pointer;}
-  .btn-secondary{width:100%;margin-top:16px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;padding:12px;cursor:pointer;}
-
-  .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }
-  .inv-table { width: 100%; border-collapse: collapse; font-family: 'DM Mono', monospace; font-size: 0.85rem;}
-  .inv-table th { color: var(--muted); text-align: left; padding: 10px 6px; border-bottom: 1px solid var(--border); font-size: 0.65rem; text-transform: uppercase;}
-  .inv-table td { padding: 12px 6px; border-bottom: 1px solid var(--border); white-space: nowrap;}
-
-  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
-  .chart-wrap{position:relative;height:220px;}
-
-  .history-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
-  .history-item{background:var(--surface); border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
-  .history-item.editing-mode { flex-direction: column; align-items: stretch; background: var(--surface2); border-color: var(--blue); }
-  .history-date{font-family:'DM Mono',monospace;font-size:0.85rem;font-weight:600;}
-  .history-sub2{font-size:0.7rem;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;}
-  
-  .btn-group-sm { display: flex; gap: 6px; }
-  .btn-sm{background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 8px;cursor:pointer;font-size:0.75rem;font-family:'Syne',sans-serif;white-space:nowrap;}
-  .btn-sm.del:hover{border-color:var(--red);color:var(--red);}
-  .btn-sm.edit:hover{border-color:var(--blue);color:var(--blue);}
-  .btn-sm.save { background: var(--accent); color: #000; border: none; font-weight: bold;}
-
-  .edit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 10px; width: 100%; }
-  
-  .scadenza-box { padding: 14px; border-radius: 10px; background: var(--surface2); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; font-family: 'DM Mono', monospace; font-size: 0.85rem;}
-  .scadenza-box.editing-active { border-color: var(--blue); }
-  .scadenza-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-family:'Syne', sans-serif;}
-  .scadenza-meta { font-size: 0.7rem; color: var(--muted); display: flex; justify-content: space-between; margin-top: 2px;}
-  .scadenza-badge { padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold;}
-  .badge-ok { background: rgba(71, 255, 170, 0.15); color: var(--accent); }
-  .badge-warn { background: rgba(255, 170, 71, 0.15); color: var(--orange); }
-  .badge-alert { background: rgba(255, 107, 107, 0.15); color: var(--red); }
-
-  .accordion-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
-  .accordion-trigger { width: 100%; background: none; border: none; padding: 14px 16px; color: var(--text); font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem; text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.2s; }
-  .accordion-trigger:hover { background: var(--surface2); }
-  .accordion-trigger .arrow { font-size: 0.7rem; transition: transform 0.2s; color: var(--muted); }
-  .accordion-item.open .accordion-trigger .arrow { transform: rotate(180deg); color: var(--accent); }
-  .accordion-content { display: none; padding: 12px; background: rgba(0,0,0,0.15); border-top: 1px solid var(--border); }
-  .accordion-item.open .accordion-content { display: block; }
-
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--accent);color:#0d0f14;font-weight:700;font-size:0.85rem;padding:12px 24px;border-radius:40px;z-index:999;transition:transform 0.3s;pointer-events:none;}
-  .toast.show{transform:translateX(-50%) translateY(0);}
-  .hidden { display: none !important; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Studio — Dashboard Saldo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root{--bg:#060a08;--bg2:#0c1410;--card:#111c16;--border:#1a2e24;--border2:#264a3f;--fg:#e4f0e8;--muted:#5e8a72;--accent:#00e88f;--accent2:#00c278;--glow:rgba(0,232,143,.1);--danger:#ff5c5c;--warn:#ffb347;--info:#47b3ff;--ent:#00e88f;--usc:#ff5c5c}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;overflow-x:hidden}
+        .bg-a{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 700px 500px at 15% 10%,rgba(0,232,143,.03) 0%,transparent 70%),radial-gradient(ellipse 400px 400px at 85% 90%,rgba(0,194,120,.02) 0%,transparent 70%)}
+        .bg-g{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,232,143,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(0,232,143,.015) 1px,transparent 1px);background-size:72px 72px;mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,black 15%,transparent 100%)}
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;border:none;cursor:pointer;transition:all .2s;white-space:nowrap}
+        .bp{background:var(--accent);color:var(--bg)}.bp:hover{background:var(--accent2);box-shadow:0 0 24px var(--glow);transform:translateY(-1px)}
+        .bs{background:var(--card);color:var(--fg);border:1px solid var(--border)}.bs:hover{background:var(--border);border-color:var(--border2);transform:translateY(-1px)}
+        .bd{background:rgba(255,92,92,.08);color:var(--danger);border:1px solid rgba(255,92,92,.15)}.bd:hover{background:rgba(255,92,92,.15)}
+        .sm{padding:7px 14px;font-size:12px;border-radius:8px}
+        .bi{background:rgba(71,179,255,.08);color:var(--info);border:1px solid rgba(71,179,255,.15)}.bi:hover{background:rgba(71,179,255,.15);transform:translateY(-1px)}
+        .tc{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px}
+        .toast{padding:14px 20px;border-radius:12px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;animation:ti .4s ease;box-shadow:0 10px 40px rgba(0,0,0,.5);max-width:400px}
+        .ts{background:rgba(0,232,143,.12);border:1px solid rgba(0,232,143,.25);color:var(--accent)}
+        .te{background:rgba(255,92,92,.12);border:1px solid rgba(255,92,92,.25);color:var(--danger)}
+        .tf{background:rgba(71,179,255,.12);border:1px solid rgba(71,179,255,.25);color:var(--info)}
+        @keyframes ti{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes to{from{opacity:1}to{opacity:0;transform:translateX(50px)}}
+        .mo{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;animation:fi .2s}
+        .mc{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:500px;width:90%;animation:mi .3s ease}
+        @keyframes fi{from{opacity:0}to{opacity:1}}
+        @keyframes mi{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+        .kpi-big{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 32px;transition:all .3s;position:relative;overflow:hidden}
+        .kpi-big:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.25)}
+        .kpi-big::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+        .kpi-big.up::after{background:var(--accent)}.kpi-big.down::after{background:var(--danger)}.kpi-big.flat::after{background:var(--muted)}
+        .kpi-big .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+        .kpi-big .val{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;letter-spacing:-1px;line-height:1}
+        .kpi-big .sub{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--muted);margin-top:8px}
+        .kpi-big .pct{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;margin-top:10px}
+        .pct.up{background:rgba(0,232,143,.12);color:var(--accent)}.pct.down{background:rgba(255,92,92,.12);color:var(--danger)}.pct.flat{background:rgba(94,138,114,.12);color:var(--muted)}
+        .pct .pa{font-size:18px}
+        .kpi-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+        .kpi-sm{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;transition:all .25s;position:relative;overflow:hidden}
+        .kpi-sm::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+        .kpi-sm.i::before{background:var(--info)}.kpi-sm.w::before{background:var(--warn)}.kpi-sm.e::before{background:var(--ent)}.kpi-sm.u::before{background:var(--usc)}
+        .kpi-sm:hover{border-color:var(--border2);transform:translateY(-2px)}
+        .kpi-sm .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+        .kpi-sm .val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700}
+        .kpi-sm .sub{font-size:11px;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace}
+        .trend-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 28px;display:flex;align-items:center;gap:24px;margin-bottom:24px;transition:all .3s}
+        .trend-box:hover{border-color:var(--border2)}
+        .trend-arrow{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;transition:all .4s;flex-shrink:0}
+        .trend-arrow.up{background:rgba(0,232,143,.1);color:var(--accent);box-shadow:0 0 30px rgba(0,232,143,.15)}
+        .trend-arrow.down{background:rgba(255,92,92,.1);color:var(--danger);box-shadow:0 0 30px rgba(255,92,92,.15);transform:rotate(180deg)}
+        .trend-arrow.flat{background:rgba(94,138,114,.1);color:var(--muted)}
+        .trend-text{flex:1}
+        .trend-text .big{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;letter-spacing:-.5px;line-height:1.1}
+        .trend-text .desc{font-size:13px;color:var(--muted);margin-top:4px}
+        .trend-text .time{font-size:11px;color:var(--muted);margin-top:2px}
+        .chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px}
+        .chart-card h3{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px}
+        .tw{overflow:auto;max-height:480px;border:1px solid var(--border);border-radius:12px;background:var(--bg2)}
+        .dt{border-collapse:collapse;width:100%;font-family:'JetBrains Mono',monospace;font-size:11.5px}
+        .dt th{background:var(--card);color:var(--accent);font-weight:600;padding:10px 12px;text-align:left;border-bottom:2px solid var(--border2);border-right:1px solid var(--border);position:sticky;top:0;z-index:10;white-space:nowrap;font-size:10px;letter-spacing:.5px;text-transform:uppercase}
+        .dt td{padding:9px 12px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);background:var(--bg2);transition:background .15s;white-space:nowrap}
+        .dt tr:hover td{background:rgba(0,232,143,.03)}
+        .dt .ent{color:var(--ent);font-weight:600}.dt .usc{color:var(--usc);font-weight:600}
+        .type-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}
+        .type-badge.vers{background:rgba(0,232,143,.1);color:var(--ent)}.type-badge.prel{background:rgba(255,92,92,.1);color:var(--usc)}.type-badge.costo{background:rgba(255,179,71,.1);color:var(--warn)}.type-badge.titolo{background:rgba(71,179,255,.1);color:var(--info)}.type-badge.altro{background:rgba(94,138,114,.1);color:var(--muted)}
+        .home-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:860px;margin:0 auto}
+        .home-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:48px 36px;text-align:center;cursor:pointer;transition:all .35s;position:relative;overflow:hidden}
+        .home-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;transition:opacity .3s}
+        .home-card.c1::before{background:var(--accent)}.home-card.c2::before{background:var(--info)}
+        .home-card:hover{border-color:var(--border2);transform:translateY(-4px);box-shadow:0 16px 50px rgba(0,0,0,.35)}.home-card:hover::before{opacity:1}
+        .home-card .ico{width:72px;height:72px;border-radius:18px;margin:0 auto 24px;display:flex;align-items:center;justify-content:center;font-size:28px}
+        .home-card.c1 .ico{background:rgba(0,232,143,.1);color:var(--accent)}.home-card.c2 .ico{background:rgba(71,179,255,.1);color:var(--info)}
+        .home-card h2{font-size:20px;font-weight:700;margin-bottom:8px}.home-card p{color:var(--muted);font-size:13px;margin-bottom:28px;line-height:1.5}
+        .nav-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+        .mode-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
+        .mode-badge.mb-c{background:rgba(0,232,143,.1);color:var(--accent);border:1px solid rgba(0,232,143,.2)}
+        .mode-badge.mb-p{background:rgba(71,179,255,.1);color:var(--info);border:1px solid rgba(71,179,255,.2)}
+        .mode-badge:hover{transform:translateY(-1px)}
+        .file-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+        .hide{display:none!important}
+        .dz{border:2px dashed var(--border2);border-radius:20px;transition:all .3s;position:relative;overflow:hidden}
+        .dz::before{content:'';position:absolute;inset:0;background:radial-gradient(circle,var(--glow),transparent 70%);opacity:0;transition:opacity .3s}
+        .dz:hover,.dz.dov{border-color:var(--accent);background:rgba(0,232,143,.03)}.dz:hover::before,.dz.dov::before{opacity:1}
+        .ptc{position:fixed;width:2px;height:2px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:0;opacity:0;animation:fp linear infinite}
+        @keyframes fp{0%{opacity:0;transform:translateY(100vh) scale(0)}10%{opacity:.4}90%{opacity:.4}100%{opacity:0;transform:translateY(-10vh) scale(1)}}
+        #cMenu{position:fixed;z-index:1001;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:6px 0;min-width:200px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+        .ci2{padding:8px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px}
+        .ci2:hover{background:var(--border)}.cdiv{height:1px;background:var(--border);margin:4px 0}.dng{color:var(--danger)}
+        .mi,.sb,.fc,.fsearch,.fsel,.msl{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--fg);font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none}
+        .sb:focus,.fc:focus,.fsearch:focus,.fsel:focus{border-color:var(--border2)}.sb{padding-left:36px;width:200px}
+        .tab-b,.ctb,.st{background:transparent;border:none;color:var(--muted);padding:8px 14px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;transition:all .2s}
+        .tab-b.act,.ctb.act,.st.act{background:var(--card);color:var(--fg);box-shadow:0 2px 8px rgba(0,0,0,.2)}
+        .tab-b:hover,.ctb:hover,.st:hover{color:var(--fg)}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+        @media(max-width:900px){.home-grid{grid-template-columns:1fr;max-width:440px}.kpi-row{grid-template-columns:1fr}.kpi-big .val{font-size:28px}}
+        @media(max-width:640px){.kpi-row{grid-template-columns:1fr}.trend-box{flex-direction:column;text-align:center;padding:20px}.trend-arrow{margin:0 auto 12px}.kpi-big .val{font-size:28px}.kpi-big .sub{font-size:12px}.trend-text .big{font-size:22px}.home-grid{padding:0 16px}.home-card{padding:32px 20px}.home-card h2{font-size:18px}}
+    </style>
 </head>
 <body>
+<div class="bg-a"></div><div class="bg-g"></div><div id="ptc"></div><div class="tc" id="tC"></div>
+<div style="display:none"><span id="xO"></span><span id="xE"></span><span id="xU"></span><span id="xS"></span><span id="xC"></span></div>
+<div id="cMenu" style="display:none"></div>
 
-<header>
-  <div class="logo">🦅</div>
-  <div>
-    <h1>Hub Unificato: Finanze &amp; Auto</h1>
-    <span id="headerSub">Database Locale Sincronizzato</span>
-  </div>
-</header>
+<div style="position:relative;z-index:1">
+<input type="file" id="fI" accept=".xlsx,.xls,.csv" class="file-hidden">
+<input type="file" id="pFI" accept=".csv" class="file-hidden">
 
-<div class="tabs">
-  <button class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
-  <button class="tab" onclick="switchTab('investimenti')">📈 Investimenti</button>
-  <button class="tab" onclick="switchTab('movimenti')">➕ Movimenti</button>
-  <button class="tab" onclick="switchTab('auto')">🚗 Gestione Auto</button>
-  <button class="tab" onclick="switchTab('ricorrenti')">🔄 Ricorrenti</button>
-  <button class="tab" onclick="switchTab('registro')">📋 Registro</button>
-  <button class="tab" onclick="switchTab('sistema')" style="color: var(--orange);">⚙️ Sistema</button>
+<header style="background:rgba(6,10,8,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50">
+<div style="max-width:1400px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+<div style="display:flex;align-items:center;gap:12px">
+<div style="width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;cursor:pointer" id="logoBtn"><i class="fas fa-th-large" style="color:var(--bg);font-size:15px"></i></div>
+<div><h1 style="font-size:16px;font-weight:700;letter-spacing:-.3px">Excel Studio</h1><p style="font-size:10px;color:var(--muted)" id="hSub">Dashboard finanziaria</p></div>
 </div>
+<div class="nav-bar" id="navBar">
+<span class="mode-badge mb-c hide" id="badgeC" onclick="goHome()"><i class="fas fa-arrow-left"></i> Estratto Conto</span>
+<span class="mode-badge mb-p hide" id="badgeP" onclick="goHome()"><i class="fas fa-arrow-left"></i> Portafoglio</span>
+<div style="position:relative" class="hide" id="cSearchW"><i class="fas fa-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px"></i><input type="text" class="sb" placeholder="Cerca..." id="sI" disabled></div>
+<select class="fc hide" id="fC" disabled><option value="">Tutte le categorie</option></select>
+<button class="btn bs sm hide" id="bAR" disabled><i class="fas fa-plus"></i> Riga</button>
+<button class="btn bd sm hide" id="bDR" disabled><i class="fas fa-trash-alt"></i></button>
+<button class="btn bp sm hide" id="bEX" disabled><i class="fas fa-file-export"></i> Esporta</button>
+<button class="btn bs sm hide" id="pExp"><i class="fas fa-file-export"></i> Esporta</button>
+</div></div></header>
 
-<div id="tab-dashboard" class="content active">
-  <div class="filter-panel">
-    <div class="filter-row">
-      <div class="field" style="margin-bottom:0; min-width:160px;">
-        <label>Periodo Panoramica</label>
-        <select id="dashPeriodoFiltro" onchange="gestisciCambioPeriodoDash()">
-          <option value="mese">Mese Corrente</option>
-          <option value="anno" selected>Anno Corrente</option>
-          <option value="tutto">Tutto lo Storico</option>
-          <option value="custom">Periodo Personalizzato 🗓️</option>
-        </select>
-      </div>
-      <div class="field hidden" id="dashCustomDateDal" style="margin-bottom:0;">
-        <label>Dal</label>
-        <input type="date" id="dashDataDal" onchange="renderDashboard()">
-      </div>
-      <div class="field hidden" id="dashCustomDateAl" style="margin-bottom:0;">
-        <label>Al</label>
-        <input type="date" id="dashDataAl" onchange="renderDashboard()">
-      </div>
-    </div>
-  </div>
-
-  <div class="section-title">📊 Panoramica Finanziaria Selezionata</div>
-  <div class="stat-grid" id="dashboardMainStats"></div>
-
-  <div class="grid-2col">
-    <div class="chart-card">
-      <h2 style="font-size:0.85rem; margin-bottom:10px;">📈 Flussi di Cassa Periodo</h2>
-      <div class="chart-wrap"><canvas id="chCashflow"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h2 style="font-size:0.85rem; margin-bottom:10px;">💳 Ripartizione Liquidità Conti nel Periodo</h2>
-      <div class="chart-wrap"><canvas id="chContiDashboard"></canvas></div>
-    </div>
-  </div>
-
-  <div class="chart-card" style="margin-top: 16px;">
-    <h2 style="font-size:0.85rem; margin-bottom:10px;">💼 Andamento Storico Valore Investimenti (Globale)</h2>
-    <div class="chart-wrap" style="height: 180px;"><canvas id="chInvestimentiDashboard"></canvas></div>
-  </div>
-
-  <div class="section-title">🚗 Stato Sintetico Veicolo</div>
-  <div class="stat-grid" id="autoDashboardStats"></div>
+<main style="max-width:1400px;margin:0 auto;padding:24px" id="homeMain">
+<div style="text-align:center;margin-bottom:40px;padding-top:48px">
+<h2 style="font-size:28px;font-weight:800;margin-bottom:8px;letter-spacing:-.5px">Cosa vuoi analizzare?</h2>
+<p style="color:var(--muted);font-size:15px">Seleziona la modalità appropriata per il tuo file</p>
 </div>
-
-<div id="tab-investimenti" class="content">
-  <div class="section-title">💼 Stato dei tuoi Asset &amp; Performance</div>
-  <div class="form-card" style="padding: 10px;">
-    <div class="table-responsive">
-      <table class="inv-table">
-        <thead>
-          <tr>
-            <th>Piattaforma</th>
-            <th>Versato Tot</th>
-            <th>Valore Attuale</th>
-            <th>Gain Assoluto</th>
-            <th>Performance %</th>
-          </tr>
-        </thead>
-        <tbody id="investimentiTabella"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="grid-2col">
-    <div class="form-card">
-      <h2>📝 Aggiorna Valore Asset</h2>
-      <div class="form-grid">
-        <div class="field"><label>Data Rilevazione</label><input type="date" id="vData"></div>
-        <div class="field"><label>Asset / Piattaforma</label>
-          <select id="vAsset"></select>
-        </div>
-        <div class="field" style="grid-column: span 2"><label>Nuovo Valore Attuale (€)</label><input type="number" id="vValore" placeholder="0.00" step="0.01"></div>
-      </div>
-      <button class="btn-primary" onclick="aggiornaValoreAsset()">Registra Valore</button>
-    </div>
-
-    <div class="form-card" style="border-color: var(--orange);">
-      <h2>⚙️ Configura Opzioni Investimento</h2>
-      <div class="form-grid" style="grid-template-columns: 2fr 1fr; gap:10px; align-items: end;">
-        <div class="field">
-          <label>Nome Nuova Piattaforma</label>
-          <input type="text" id="nuovoAssetNome" placeholder="es. Scalable...">
-        </div>
-        <button class="btn-primary" style="margin-top:0; padding:10px; background:var(--orange); color:#000;" onclick="creaNuovoAsset()">Aggiungi</button>
-      </div>
-      <div id="listaAssetCancellabili" style="margin-top: 14px; display:flex; flex-wrap:wrap; gap:8px;"></div>
-    </div>
-  </div>
-
-  <div class="chart-card" style="margin-top:16px;">
-    <h2>Allocazione Portafoglio</h2>
-    <div class="chart-wrap" style="height: 180px;"><canvas id="chAllocazione"></canvas></div>
-  </div>
-
-  <div class="section-title">💼 Storico Modifiche Valutazioni Asset</div>
-  <div class="history-list" id="storicoAssetLista"></div>
+<div class="home-grid">
+<div class="home-card c1" onclick="startMode('conto')">
+<div class="ico"><i class="fas fa-university"></i></div>
+<h2>Estratto Conto</h2>
+<p>Visualizza saldo, entrate, uscite e andamento con indicatore positivo/negativo</p>
+<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+<button class="btn bp sm open-conto"><i class="fas fa-folder-open"></i> Sfoglia file</button>
+<button class="btn bs sm" onclick="event.stopPropagation();loadContoDemo()"><i class="fas fa-play"></i> Demo</button>
 </div>
-
-<div id="tab-movimenti" class="content">
-  <div class="grid-2col">
-    <div class="form-card">
-      <h2>Registra Transazione o Giroconto</h2>
-      <div class="form-grid">
-        <div class="field"><label>Data</label><input type="date" id="fData"></div>
-        <div class="field"><label>Tipo Azione</label>
-          <select id="fTipo" onchange="AdattaFormMovimenti('fTipo', 'boxContoDestinazione', 'boxCat', 'fSubField', 'fCategoria', 'fSubCategoria')">
-            <option value="uscita">Spesa / Uscita 🔴</option>
-            <option value="entrata">Entrata / Stipendio 🟢</option>
-            <option value="giroconto">Spostamento tra conti 🔄</option>
-          </select>
-        </div>
-        <div class="field"><label>Importo (€)</label><input type="number" id="fImporto" placeholder="0.00" step="0.01"></div>
-        
-        <div class="field" id="boxContoOrigine"><label>Conto / Banca</label>
-          <select id="fContoOrigine"></select>
-        </div>
-        <div class="field hidden" id="boxContoDestinazione"><label>Conto Destinazione</label>
-          <select id="fContoDestinazione"></select>
-        </div>
-        <div class="field" id="boxCat"><label>Categoria Principale</label>
-          <select id="fCategoria" onchange="handleCategoriaChange('fTipo', 'fCategoria', 'fSubField', 'fSubCategoria')"></select>
-        </div>
-        <div class="field hidden" id="fSubField"><label>Sottocategoria</label>
-          <select id="fSubCategoria"></select>
-        </div>
-        <div class="field" style="grid-column:1/-1"><label>Descrizione / Note</label><input type="text" id="fDesc" placeholder="Note aggiuntive..."></div>
-      </div>
-      <button class="btn-primary" onclick="aggiungiMovimento()">Salva nel Database</button>
-    </div>
-
-    <div>
-      <div class="form-card" style="border-color: var(--purple);">
-        <h2>🏦 Configurazione Banche &amp; Conti</h2>
-        <div class="form-grid" style="grid-template-columns: 2fr 1fr; gap:10px; align-items: end;">
-          <div class="field">
-            <label>Nome Nuovo Conto / Banca</label>
-            <input type="text" id="nuovoContoNome" placeholder="es. Fineco...">
-          </div>
-          <button class="btn-primary" style="margin-top:0; padding:10px; background:var(--purple); color:#000;" onclick="creaNuovoConto()">Aggiungi</button>
-        </div>
-        <div id="listaContiCancellabili" style="margin-top: 14px; display:flex; flex-wrap:wrap; gap:8px;"></div>
-      </div>
-
-      <div class="form-card" style="border-color: var(--blue);">
-        <h2>🛠️ Allinea / Rettifica Saldo Esatto</h2>
-        <div class="form-grid" style="grid-template-columns: 1fr;">
-          <div class="field">
-            <label>Seleziona Conto</label>
-            <select id="modSaldoConto"></select>
-          </div>
-          <div class="field">
-            <label>Saldo Reale Corrente (€)</label>
-            <input type="number" id="modSaldoNuovoValore" placeholder="0.00" step="0.01">
-          </div>
-        </div>
-        <button class="btn-secondary" style="border-color: var(--blue); color: var(--blue);" onclick="forzaRettificaSaldo()">Applica Rettifica Saldo</button>
-      </div>
-    </div>
-  </div>
+<p style="color:var(--muted);font-size:10px;margin-top:16px;opacity:.5">.xlsx .xls .csv</p>
 </div>
-
-<div id="tab-auto" class="content">
-  <div class="tabs" style="margin-bottom:15px; border-radius:8px;">
-    <button class="tab active" id="subtab-btn-carburante" onclick="switchSubTab('carburante')">⛽ Carburante</button>
-    <button class="tab" id="subtab-btn-manutenzione" onclick="switchSubTab('manutenzione')">🔧 Officina</button>
-    <button class="tab" id="subtab-btn-scadenze" onclick="switchSubTab('scadenze')">📅 Scadenze e Costi Fissi</button>
-  </div>
-
-  <div id="subtab-carburante" class="subcontent">
-    <div class="form-card">
-      <h2>⛽ Registra Rifornimento</h2>
-      <div class="form-grid">
-        <div class="field"><label>Data</label><input type="date" id="cData"></div>
-        <div class="field"><label>Addebita su Conto</label><select id="cContoAddebito"></select></div>
-        <div class="field"><label>KM Attuali</label><input type="number" id="cKm" placeholder="es. 124000"></div>
-        <div class="field"><label>Litri</label><input type="number" id="cLitri" step="0.01" placeholder="0.00"></div>
-        <div class="field" style="grid-column: span 2"><label>Spesa Totale (€)</label><input type="number" id="cSpesa" step="0.01" placeholder="0.00"></div>
-      </div>
-      <button class="btn-primary" onclick="inserisciCarburante()">Registra Rifornimento</button>
-    </div>
-    <div class="section-title">📋 Storico Registro Rifornimenti</div>
-    <div class="history-list" id="listaCarburante"></div>
-  </div>
-
-  <div id="subtab-manutenzione" class="subcontent" style="display:none;">
-    <div class="form-card">
-      <h2>🔧 Officina &amp; Gomme</h2>
-      <div class="form-grid">
-        <div class="field"><label>Data</label><input type="date" id="mData"></div>
-        <div class="field"><label>Addebita su Conto</label><select id="mContoAddebito"></select></div>
-        <div class="field"><label>KM Intervento</label><input type="number" id="mKm" placeholder="es. 125400"></div>
-        <div class="field"><label>Tipo Spesa</label>
-          <select id="mTipo">
-            <option value="Tagliando">Tagliando Ordinario</option>
-            <option value="Freni">Freni / Pastiglie / Dischi</option>
-            <option value="Gomme">Cambio / Inversione Gomme</option>
-            <option value="Straordinaria">Riparazione Guasto / Altro</option>
-          </select>
-        </div>
-        <div class="field"><label>Costo Totale (€)</label><input type="number" id="mCosto" step="0.01" placeholder="0.00"></div>
-        <div class="field" style="grid-column: 1/-1"><label>Note Intervento</label><input type="text" id="mDesc" placeholder="Dettagli..."></div>
-      </div>
-      <button class="btn-primary" onclick="inserisciManutenzione()">Salva Intervento</button>
-    </div>
-    <div class="section-title">📋 Storico Officina e Interventi</div>
-    <div class="history-list" id="listaManutenzioni"></div>
-  </div>
-
-  <div id="subtab-scadenze" class="subcontent" style="display:none;">
-    <div class="grid-2col">
-      <div class="form-card">
-        <h2>📅 Stato Scadenze Correnti</h2>
-        <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;" id="scadenzeStatoScatole"></div>
-      </div>
-      
-      <div class="form-card" style="border-color: var(--orange);">
-        <h2>⚙️ Rinnova Scadenza / Registra Versamento</h2>
-        <div class="form-grid">
-          <div class="field" style="grid-column: 1/-1;">
-            <label>Seleziona Tassa / Servizio</label>
-            <select id="scTipoTassa">
-              <option value="bollo">Bollo Auto 🎫</option>
-              <option value="assicurazione">Assicurazione 🛡️</option>
-              <option value="revisione">Revisione Statale ⏱️</option>
-            </select>
-          </div>
-          <div class="field"><label>Data del Pagamento / Rinnovo</label><input type="date" id="scDataPagamento"></div>
-          <div class="field"><label>Nuova Prossima Scadenza</label><input type="date" id="scDataScadenza"></div>
-          <div class="field"><label>Importo Sostenuto (€)</label><input type="number" id="scCosto" step="0.01" placeholder="0.00"></div>
-          <div class="field" style="grid-column: 1/-1;"><label>Addebita Costo su</label><select id="scContoAddebito"></select></div>
-        </div>
-        <button class="btn-primary" style="background: var(--orange); color: #000;" onclick="salvaScadenzaConSpesa()">Salva e Registra Movimento</button>
-      </div>
-    </div>
-    
-    <div class="section-title">📋 Storico Pagamenti Diviso per Sezione</div>
-    
-    <div class="accordion-item" id="acc-bollo">
-      <button class="accordion-trigger" onclick="toggleAccordion('acc-bollo')">
-        <span>🎫 Storico Bollo Auto (<span id="count-bollo">0</span>)</span>
-        <span class="arrow">▼</span>
-      </button>
-      <div class="accordion-content history-list" id="listaStorico-bollo"></div>
-    </div>
-
-    <div class="accordion-item" id="acc-assicurazione">
-      <button class="accordion-trigger" onclick="toggleAccordion('acc-assicurazione')">
-        <span>🛡️ Storico Assicurazione (<span id="count-assicurazione">0</span>)</span>
-        <span class="arrow">▼</span>
-      </button>
-      <div class="accordion-content history-list" id="listaStorico-assicurazione"></div>
-    </div>
-
-    <div class="accordion-item" id="acc-revisione">
-      <button class="accordion-trigger" onclick="toggleAccordion('acc-revisione')">
-        <span>⏱️ Storico Revisione Statale (<span id="count-revisione">0</span>)</span>
-        <span class="arrow">▼</span>
-      </button>
-      <div class="accordion-content history-list" id="listaStorico-revisione"></div>
-    </div>
-  </div>
+<div class="home-card c2" onclick="startMode('port')">
+<div class="ico"><i class="fas fa-chart-area"></i></div>
+<h2>Portafoglio</h2>
+<p>Monitora patrimonio, movimenti, composizione titoli e rendimento nel tempo</p>
+<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+<button class="btn bi sm open-port"><i class="fas fa-folder-open"></i> Sfoglia CSV</button>
+<button class="btn bs sm" onclick="event.stopPropagation();loadPortDemo()"><i class="fas fa-play"></i> Demo G1303</button>
 </div>
-
-<div id="tab-ricorrenti" class="content">
-  <div class="form-card">
-    <h2>🔄 Automazioni Ricorrenti</h2>
-    <div class="form-grid">
-      <div class="field"><label>Data Prossimo Rilascio</label><input type="date" id="rDataInizio"></div>
-      <div class="field"><label>Tipo</label>
-        <select id="rTipo" onchange="AdattaFormRicorrenti('rTipo', 'rBoxDest')">
-          <option value="entrata">Entrata Fissa 🟢</option>
-          <option value="uscita">Uscita Fissa 🔴</option>
-          <option value="giroconto">Giroconto Automatico 🔄</option>
-        </select>
-      </div>
-      <div class="field"><label>Importo (€)</label><input type="number" id="rImporto" placeholder="0.00" step="0.01"></div>
-      <div class="field"><label>Conto Origine</label>
-        <select id="rContoOrigine"></select>
-      </div>
-      <div class="field hidden" id="rBoxDest"><label>Conto Destinazione</label>
-        <select id="rContoDestinazione"></select>
-      </div>
-      <div class="field"><label>Frequenza</label>
-        <select id="rFreq">
-          <option value="settimanale">Ogni Settimana</option>
-          <option value="2settimane">Ogni 2 Settimane</option>
-          <option value="mensile" selected>Ogni Mese</option>
-          <option value="2mesi">Ogni 2 Mesi</option>
-          <option value="annuale">Ogni Anno</option>
-        </select>
-      </div>
-      <div class="field" style="grid-column:1/-1"><label>Nome Automazione</label><input type="text" id="rDesc" placeholder="es. Stipendio, Assicurazione..."></div>
-    </div>
-    <button class="btn-primary" onclick="aggiungiAutomazione()">Attiva Automazione</button>
-  </div>
-  <div class="section-title">🔄 Automazioni Attive &amp; Modifica Storico</div>
-  <div class="history-list" id="automazioniAttiveLista"></div>
+<p style="color:var(--muted);font-size:10px;margin-top:16px;opacity:.5">CSV PatrimonioTotale Fineco</p>
 </div>
-
-<div id="tab-registro" class="content">
-  <div class="section-title">📋 Registro Flussi Consolidato (Modificabile)</div>
-  <div class="history-list" id="registroLista"></div>
 </div>
+</main>
 
-<div id="tab-sistema" class="content">
-  <div class="section-title">⚙️ Gestione Dati e Backup Remoto</div>
-  
-  <div class="grid-2col">
-    <div class="form-card" style="border-color: var(--accent);">
-      <h2>📤 Esporta i tuoi Dati (Salva Backup)</h2>
-      <p style="font-size:0.8rem; color:var(--muted); margin-bottom:12px; font-family:'Syne'; line-height:1.4;">
-        Genera un file contenente l'intero database di transazioni, portafoglio investimenti e storico auto. Puoi salvarlo direttamente su iPhone.
-      </p>
-      <button class="btn-primary" style="background: var(--accent); color: #0d0f14;" onclick="esportaDatiCompleti()">Scarica Backup JSON</button>
-    </div>
-
-    <div class="form-card" style="border-color: var(--orange);">
-      <h2>📥 Importa Dati da Backup</h2>
-      <p style="font-size:0.8rem; color:var(--muted); margin-bottom:12px; font-family:'Syne'; line-height:1.4;">
-        Seleziona un file di backup precedentemente scaricato per ripristinare istantaneamente tutti i conti, lo storico e i grafici.
-      </p>
-      <div class="field">
-        <label>Seleziona file .json</label>
-        <input type="file" id="importFileInput" accept=".json" style="padding:8px;">
-      </div>
-      <button class="btn-primary" style="background: var(--orange); color: #000; margin-top:10px;" onclick="importaDatiCompleti()">Ripristina Backup</button>
-    </div>
-  </div>
+<main style="max-width:1400px;margin:0 auto;padding:0 24px 24px" id="contoMain" class="hide">
+<div style="padding-top:20px">
+<section id="dS" style="margin-bottom:24px">
+<div class="dz" id="dZ" style="padding:50px 40px;text-align:center"><div style="position:relative;z-index:1">
+<div style="width:70px;height:70px;margin:0 auto 20px;border-radius:18px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center"><i class="fas fa-file-excel" style="font-size:28px;color:var(--accent)"></i></div>
+<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">Carica il tuo estratto conto</h2>
+<p style="color:var(--muted);font-size:14px;margin-bottom:24px">Trascina qui il file oppure usa i dati demo</p>
+<div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap">
+<button class="btn bp open-conto"><i class="fas fa-folder-open"></i> Sfoglia file</button>
+<button class="btn bs" onclick="loadContoDemo()"><i class="fas fa-play"></i> Dati demo</button>
+</div></div></div>
+</section>
+<section id="cTrend" class="hide" style="margin-bottom:24px"><div class="trend-box" id="trendBox">
+<div class="trend-arrow flat" id="trendArrow"><i class="fas fa-minus"></i></div>
+<div class="trend-text">
+    <div class="big" id="trendBig">--</div>
+    <div class="desc" id="trendDesc">Carica un file per vedere l'andamento</div>
+    <div class="pct flat" id="trendPct" style="display:none"><span class="pa">0.00%</span></div>
+    <div class="time" id="trendTime"></div>
 </div>
+</div>
+<div class="chart-card" style="height: 300px;"><canvas id="cT"></canvas></div>
+</section>
+<section id="cKpi" class="hide" style="margin-bottom:24px"><div class="kpi-big" id="kpiSaldo"><div class="lbl"><i class="fas fa-wallet"></i> Saldo Attuale</div><div class="val" id="kpiSaldoVal">--</div><div class="sub" id="kpiSaldoSub"></div></div></section>
+<section id="cKpiRow" class="hide" style="margin-bottom:24px"><div class="kpi-row">
+<div class="kpi-sm i"><div class="lbl"><i class="fas fa-arrow-down" style="margin-right:4px"></i>Totale Entrate</div><div class="val" style="color:var(--ent)" id="kpiIn">0</div><div class="sub" id="kpiInSub"></div></div>
+<div class="kpi-sm u"><div class="lbl"><i class="fas fa-arrow-up" style="margin-right:4px"></i>Totale Uscite</div><div class="val" style="color:var(--usc)" id="kpiOut">0</div><div class="sub" id="kpiOutSub"></div></div>
+<div class="kpi-sm w"><div class="lbl"><i class="fas fa-chart-bar" style="margin-right:4px"></i>Bilancio Netto</div><div class="val" style="color:var(--warn)" id="kpiNet">0</div><div class="sub" id="kpiNetSub"></div></div>
+</div></section>
+<section id="dSh" class="hide" style="margin-bottom:24px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div class="chart-card"><h3><i class="fas fa-chart-pie" style="margin-right:6px"></i>Uscite per Categoria</h3><canvas id="cP"></canvas></div>
+<div class="chart-card"><div style="display:flex;gap:4px;margin-bottom:14px;background:var(--bg2);border-radius:8px;padding:3px;border:1px solid var(--border)"><button class="ctb act" data-v="year" style="flex:1"><i class="fas fa-calendar-alt" style="margin-right:4px"></i>Panoramica Anno</button><button class="ctb" data-v="month" style="flex:1"><i class="fas fa-search-plus" style="margin-right:4px"></i>Dettaglio Mese</button></div>
+<div id="yV"><canvas id="cB"></canvas></div>
+<div id="mV" style="display:none"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><label style="font-size:12px;color:var(--muted);white-space:nowrap">Mese:</label><select class="msl" id="mSel"></select></div>
+<div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap" id="mSum"></div>
+<canvas id="cM"></canvas></div>
+</div></div></section>
+<section id="tTS" class="hide" style="margin-bottom:-1px;position:relative;z-index:5"><div style="display:flex;gap:4px;overflow-x:auto;padding-bottom:0" id="sT"></div></section>
+<section id="tS" class="hide"><div class="tw"><table class="dt" id="eT"></table></div>
+<div style="margin-top:12px"><p style="font-size:12px;color:var(--muted)"><i class="fas fa-info-circle"></i> Doppio clic per modificare. Tasto destro per opzioni.</p><p style="font-size:12px;color:var(--muted)" id="fI2"></p></div></section>
+</div>
+</main>
 
-<div class="toast" id="toast"></div>
+<main style="max-width:1400px;margin:0 auto;padding:0 24px 24px" id="portMain" class="hide">
+<div style="padding-top:20px">
+<section id="pDrop">
+<div class="dz" id="pDZ" style="padding:50px 40px;text-align:center"><div style="position:relative;z-index:1">
+<div style="width:70px;height:70px;margin:0 auto 20px;border-radius:18px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center"><i class="fas fa-file-csv" style="font-size:28px;color:var(--info)"></i></div>
+<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">Carica il CSV Patrimonio</h2>
+<p style="color:var(--muted);font-size:14px;margin-bottom:24px">Formato Fineco: PatrimonioTotale_*.csv</p>
+<div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap">
+<button class="btn bi open-port"><i class="fas fa-folder-open"></i> Sfoglia CSV</button>
+<button class="btn bs" onclick="loadPortDemo()"><i class="fas fa-play"></i> Demo G1303</button>
+</div></div></div>
+</section>
+<section id="pTrend" class="hide" style="margin-bottom:24px"><div class="trend-box" id="pTrendBox">
+<div class="trend-arrow flat" id="pTrendArrow"><i class="fas fa-minus"></i></div>
+<div class="trend-text"><div class="big" id="pTrendBig">--</div><div class="desc" id="pTrendDesc">Carica un file per vedere l'andamento</div><div class="time" id="pTrendTime"></div></div>
+</div>
+<div class="chart-card" style="height: 300px;"><canvas id="pC"></canvas></div>
+</section>
+<section id="pKpi" class="hide" style="margin-bottom:24px"><div class="kpi-big" id="pKpiSaldo"><div class="lbl"><i class="fas fa-wallet"></i> Patrimonio Attuale</div><div class="val" style="color:var(--accent)" id="pKpiVal">--</div><div class="sub" id="pKpiSub"></div></div></section>
+<section id="pKpiRow" class="hide" style="margin-bottom:24px"><div class="kpi-row">
+<div class="kpi-sm w"><div class="lbl"><i class="fas fa-chart-bar" style="margin-right:4px"></i>Rendimento Totale</div><div class="val" style="color:var(--warn)" id="pKpiRend">--</div><div class="sub" id="pKpiRendSub"></div></div>
+<div class="kpi-sm i"><div class="lbl"><i class="fas fa-arrow-down" style="margin-right:4px"></i>Var. Giornaliera</div><div class="val" id="pKpiDay">--</div><div class="sub" id="pKpiDaySub"></div></div>
+<div class="kpi-sm e"><div class="lbl"><i class="fas fa-arrow-down" style="margin-right:4px"></i>Costi Totali</div><div class="val" style="color:var(--usc)" id="pKpiCosti">--</div><div class="sub" id="pKpiCostiSub"></div></div>
+</div></section>
+<section id="pTabs" class="hide"><div style="display:flex;gap:2px;background:var(--bg2);border-radius:10px;padding:3px;border:1px solid var(--border);margin-bottom:20px;overflow-x:auto">
+<button class="tab-b act" data-t="mov"><i class="fas fa-exchange-alt" style="margin-right:4px"></i>Movimenti</button>
+<button class="tab-b" data-t="port"><i class="fas fa-briefcase" style="margin-right:4px"></i>Portafoglio</button>
+<button class="tab-b" data-t="raw"><i class="fas fa-table" style="margin-right:4px"></i>Dati Giornalieri</button>
+</div>
+<div id="ptMov" style="display:none"><div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center"><div style="position:relative"><i class="fas fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:11px"></i><input type="text" class="fsearch" placeholder="Cerca movimento..." id="movSearch"></div><select class="fsel" id="movType"><option value="">Tutti i tipi</option><option value="vers">Versamenti</option><option value="prel">Prelievi</option><option value="costo">Costi/Bolli</option><option value="titolo">Conferimenti</option></select><span style="font-size:11px;color:var(--muted);margin-left:auto" id="movCount"></span></div><div class="tw" style="max-height:500px"><table class="dt" id="movTbl"></table></div></div>
+<div id="ptPort" style="display:none"><div class="tw" style="max-height:600px"><table class="dt" id="portTbl"></table></div></div>
+<div id="ptRaw" style="display:none"><div style="display:flex;gap:8px;margin-bottom:14px"><span style="font-size:11px;color:var(--muted)" id="rawCount"></span></div><div class="tw" style="max-height:600px"><table class="dt" id="rawTbl"></table></div></div>
+</section>
+</div>
+</main>
+
+<div class="mo" id="mO" style="display:none"><div class="mc" id="mC"></div></div>
+</div>
 
 <script>
-const KEYS = {
-  cash: 'finanze_movimenti_v2',
-  recurConfig: 'finanze_ricorrenti_config_v2',
-  assetVal: 'finanze_asset_val_v2',
-  fuel: 'carburante_v1', 
-  maint: 'manutenzione_v1', 
-  scadenze: 'auto_scadenze_fisse_v2',
-  storicoScadenze: 'auto_storico_scadenze_pagate_v1',
-  conti: 'finanze_lista_conti_v1',
-  assetsList: 'finanze_lista_assets_v1'
-};
+var $=function(id){return document.getElementById(id)};
+function esc(s){var d=document.createElement('div');d.textContent=String(s);return d.innerHTML}
+function fmtEur(v){return v.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+'\u20AC'}
+function fmtPct(v){return(v>=0?'+':'')+v.toFixed(2)+'%'}
 
-const STRUTTURA_CATEGORIE = {
-  uscita: {
-    'Mutuo / Affitto': null,
-    'Bollette': ['Acqua', 'Corrente', 'WiFi'],
-    'Spesa alimentare': null,
-    'Investimenti': ['Directa', 'Mintos', 'Crypto.com', 'Fondo Cometa'],
-    'Altre spese': ['Svago', 'Ristoranti', 'Cura personale', 'Abbigliamento'],
-    'Abbonamenti': ['Netflix', 'Disney+', 'Amazon Prime'],
-    'Salute': null,
-    'Ristrutturazione': ['Impresa edile', 'Impresa idraulica', 'Impresa elettrica', 'Serramentista', 'Geometra'],
-    'Auto': ['Carburante', 'Manutenzione', 'Bollo', 'Assicurazione', 'Revisione']
-  },
-  entrata: { 'Stipendio': null, 'Rendite / Investimenti': null, 'Rimborsi': null, 'Altro': null }
-};
+(function(){var c=$('ptc');for(var i=0;i<6;i++){var p=document.createElement('div');p.className='ptc';p.style.left=Math.random()*100+'%';p.style.animationDuration=(16+Math.random()*16)+'s';p.style.animationDelay=(Math.random()*12)+'s';var sz=2+Math.random()*2;p.style.width=p.style.height=sz+'px';c.appendChild(p)}})();
 
-function getContiAttuali() {
-  let list = JSON.parse(localStorage.getItem(KEYS.conti));
-  if(!list || !list.length) {
-    list = ["Intesa Sanpaolo", "Revolut", "Conto Emergenza (Revolut)"];
-    localStorage.setItem(KEYS.conti, JSON.stringify(list));
-  }
-  return list;
-}
+function toast(m,t){t=t||'s';var el=document.createElement('div');el.className='toast '+({s:'ts',e:'te',f:'tf'}[t]);el.innerHTML='<i class="fas '+({s:'fa-check-circle',e:'fa-exclamation-circle',f:'fa-info-circle'}[t])+'"></i><span>'+m+'</span>';$('tC').appendChild(el);setTimeout(function(){el.style.animation='to .3s ease forwards';setTimeout(function(){el.remove()},300)},3500)}
 
-function getAssetsAttuali() {
-  let list = JSON.parse(localStorage.getItem(KEYS.assetsList));
-  if(!list || !list.length) {
-    list = ["Directa", "Mintos", "Crypto.com", "Fondo Cometa"];
-    localStorage.setItem(KEYS.assetsList, JSON.stringify(list));
-  }
-  return list;
-}
+function showModal(h,w){$('mC').innerHTML=h;if(w)$('mC').classList.add('wide');else $('mC').classList.remove('wide');$('mO').style.display='flex'}
+function closeModal(){$('mO').style.display='none';$('mC').classList.remove('wide')}
+ $('mO').addEventListener('click',function(e){if(e.target===$('mO'))closeModal()});
 
-function ld(k){try{return JSON.parse(localStorage.getItem(k))||[];}catch{return[];}}
-function ldObj(k){try{return JSON.parse(localStorage.getItem(k))||{};}catch{return{};}}
-function sv(k,val){localStorage.setItem(k,JSON.stringify(val));}
-function today(){return new Date().toISOString().slice(0,10);}
-function fmtDate(iso){if(!iso)return'—';const[y,m,d]=iso.slice(0,10).split('-');return`${d}/${m}/${y}`;}
-function showToast(msg){const t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+var currentMode=null;
+var EL_HOME=['homeMain'];
+var EL_CONTO=['contoMain','dS','cTrend','cKpi','cKpiRow','dSh','tTS','tS','cSearchW','fC','bAR','bDR','bEX','badgeC'];
+var EL_PORT=['portMain','pDrop','pTrend','pKpi','pKpiRow','pTabs','pExp','badgeP'];
 
-function toggleAccordion(id) {
-  const el = document.getElementById(id);
-  if(el) el.classList.toggle('open');
-}
+function showEls(ids){for(var i=0;i<ids.length;i++)$(ids[i]).classList.remove('hide')}
+function hideEls(ids){for(var i=0;i<ids.length;i++)$(ids[i]).classList.add('hide')}
 
-// --- LOGICA ESPORTA / IMPORTA COMPLETA ---
-function esportaDatiCompleti() {
-  let backup = {};
-  Object.keys(KEYS).forEach(chiave => {
-    backup[chiave] = localStorage.getItem(KEYS[chiave]);
-  });
-  
-  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `backup_hub_finanze_${today()}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast('📥 Backup scaricato sul dispositivo!');
-}
+function goHome(){currentMode=null;showEls(EL_HOME);hideEls(EL_CONTO);hideEls(EL_PORT);$('hSub').textContent='Dashboard finanziaria'}
+function startMode(mode){currentMode=mode;hideEls(EL_HOME);if(mode==='conto'){hideEls(EL_PORT);showEls(EL_CONTO);$('hSub').textContent=CS.fn||'Estratto Conto'}
+else{hideEls(EL_CONTO);showEls(EL_PORT);$('hSub').textContent=P.conto||'Portafoglio Investimenti'}}
 
-function importaDatiCompleti() {
-  const fileInput = document.getElementById('importFileInput');
-  if (!fileInput || !fileInput.files.length) {
-    showToast('⚠ Seleziona prima un file di backup.');
-    return;
-  }
-  
-  const file = fileInput.files[0];
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const backup = JSON.parse(e.target.result);
-      if(confirm("Ripristinando il backup sovrascriverai i dati attuali. Vuoi procedere?")) {
-        Object.keys(backup).forEach(chiave => {
-          if (backup[chiave] !== null) {
-            localStorage.setItem(chiave, backup[chiave]);
-          }
-        });
-        showToast('✓ Backup ripristinato con successo!');
-        setTimeout(() => { window.location.reload(); }, 1000);
-      }
-    } catch(err) {
-      showToast('❌ Errore nella lettura del file. File non valido.');
-    }
-  };
-  reader.readAsText(file);
-}
+function parseNum(val){if(typeof val==='number')return val;var s=String(val).trim();if(s===''||s==='N.D'||s==='-'||s==='*')return 0;s=s.replace(/\s/g,'').replace(/\u20AC/g,'');var neg=false;if(s.charAt(0)==='-'){neg=true;s=s.substring(1)}else if(s.charAt(0)==='+')s=s.substring(1);if(s.indexOf(',')>=0&&s.indexOf('.')>=0){var lc=s.lastIndexOf(','),ld=s.lastIndexOf('.');if(ld>lc)s=s.replace(/,/g,'');else{s=s.replace(/\./g,'');s=s.replace(',','.')}}else if(s.indexOf(',')>=0&&s.indexOf('.')<0){var parts=s.split(',');if(parts.length===2&&parts[1].length<=2&&/^\d+$/.test(parts[1]))s=s.replace(',','.');else s=s.replace(/,/g,'')}var n=parseFloat(s);return isNaN(n)?0:(neg?-n:n)}
 
-function creaNuovoConto() {
-  const input = document.getElementById('nuovoContoNome');
-  if(!input || !input.value.trim()) return;
-  let attuali = getContiAttuali();
-  const nome = input.value.trim();
-  if(attuali.includes(nome)) { showToast('⚠ Conto già esistente.'); return; }
-  attuali.push(nome);
-  sv(KEYS.conti, attuali);
-  input.value = '';
-  popolaTendineConti();
-  showToast('✓ Conto aggiunto.');
-}
+function findHeaderRow(raw){var kw=['operazione','dettagli','importo','conto','categoria','valuta','contabilizzazione'];for(var i=0;i<Math.min(raw.length,25);i++){var row=raw[i];if(!row)continue;var lower=[];for(var j=0;j<row.length;j++)lower.push(String(row[j]).trim().toLowerCase());if(lower.indexOf('data')>=0){var match=0;for(var k=0;k<kw.length;k++){for(var m=0;m<lower.length;m++){if(lower[m].indexOf(kw[k])>=0){match++;break}}}if(match>=3)return i}}for(var i2=0;i2<Math.min(raw.length,25);i2++){var r=raw[i2];if(!r)continue;var ne=0;for(var p=0;p<r.length;p++){if(r[p]!==''&&r[p]!=='*'&&r[p]!==null&&r[p]!==undefined)ne++}if(ne>=5)return i2}return 0}
 
-function rimuoviContoAnagrafica(nome) {
-  if(confirm(`Rimuovere ${nome} dall'anagrafica? I movimenti esistenti non verranno cancellati.`)) {
-    let attuali = getContiAttuali().filter(c => c !== nome);
-    sv(KEYS.conti, attuali);
-    popolaTendineConti();
-  }
-}
+function parsePN(val){if(typeof val==='number')return val;var s=String(val).trim();if(s===''||s==='-'||s==='N.D'||s==='*')return 0;s=s.replace(/\s+/g,' ');if(/^\d+ \d+$/.test(s))s=s.replace(' ','.');var n=parseFloat(s);return isNaN(n)?0:n}
+function parsePD(s){s=String(s).trim();if(!s)return null;var p=s.split('/');if(p.length===3){var m=parseInt(p[0],10),d=parseInt(p[1],10),y=parseInt(p[2],10);if(y<100)y+=2000;return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0')}return s}
+function classMov(desc){var d=desc.toLowerCase();if(d.indexOf('conferimento con bonifico')>=0)return'vers';if(d.indexOf('conferimento titoli')>=0)return'titolo';if(d.indexOf('prelievo')>=0)return'prel';if(d.indexOf('bollo')>=0)return'costo';if(d.indexOf('ritenuta')>=0)return'costo';return'altro'}
+function labelMov(t){return{vers:'Versamento',prel:'Prelievo',costo:'Costo',titolo:'Conferimento',altro:'Altro'}[t]||t}
+function badgeMov(t){return{vers:'vers',prel:'prel',costo:'costo',titolo:'titolo',altro:'altro'}[t]||'altro'}
 
-function creaNuovoAsset() {
-  const input = document.getElementById('nuovoAssetNome');
-  if(!input || !input.value.trim()) return;
-  let attuali = getAssetsAttuali();
-  const nome = input.value.trim();
-  if(attuali.includes(nome)) { showToast('⚠ Asset già esistente.'); return; }
-  attuali.push(nome);
-  sv(KEYS.assetsList, attuali);
-  input.value = '';
-  popolaTendineAsset();
-  popolaTendineConti(); 
-  showToast('✓ Asset aggiunto.');
-}
+function parsePatCSV(text){if(text.charCodeAt(0)===0xFEFF)text=text.substring(1);var lines=text.split(/\r?\n/),raw=[];for(var i=0;i<lines.length;i++){var l=lines[i].trim();if(l)raw.push(l.split(';'))}var conto='',dal='',al='';for(var r=0;r<Math.min(5,raw.length);r++){var line=raw[r].join(';');if(line.indexOf('Conto :')>=0){var m=line.match(/Conto\s*:\s*(.+)/);if(m)conto=m[1].trim()}if(line.indexOf('Dati dal')>=0){var m2=line.match(/(\d{4}\/\d{2}\/\d{2})\s+al\s+(\d{4}\/\d{2}\/\d{2})/);if(m2){dal=m2[1];al=m2[2]}}}var patHdrRow=-1;for(var r2=0;r2<Math.min(10,raw.length);r2++){var j=raw[r2].join(';').toLowerCase();if(j.indexOf('liquidit')>=0&&j.indexOf('portafoglio')>=0){patHdrRow=r2;break}}if(patHdrRow<0)patHdrRow=6;var pat=[],mov=[],portMap={};for(var r3=patHdrRow+1;r3<raw.length;r3++){var row=raw[r3];if(!row||row.length<2)continue;var d=String(row[0]||'').trim();if(!d||d.indexOf('Valore')>=0)continue;var dateStr=parsePD(d);if(!dateStr)continue;var liq=parsePN(row[1]),fin=parsePN(row[2]),gar=parsePN(row[3]),port=parsePN(row[4]),patVal=parsePN(row[5]),note=String(row[6]||'').trim();if(patVal===0&&liq===0&&port===0&&r3<patHdrRow+20)continue;pat.push({date:dateStr,liq:liq,fin:fin,gar:gar,port:port,pat:patVal,note:note});var md=String(row[9]||'').trim();if(md){var mdate=parsePD(md),mdesc=String(row[10]||'').trim(),mval=parsePN(row[11]),mtit=String(row[12]||'').trim(),misin=String(row[13]||'').trim(),mtick=String(row[14]||'').trim(),mtype=classMov(mdesc);mov.push({date:mdate,desc:mdesc,val:mval,titolo:mtit,isin:misin,ticker:mtick,type:mtype});if(mtype==='titolo'&&mtit){var key=mtit.toUpperCase();if(!portMap[key])portMap[key]={titolo:mtit,isin:misin,ticker:mtick,val:0};portMap[key].val+=mval}}}var portArr=[],pk=Object.keys(portMap);for(var p=0;p<pk.length;p++)portArr.push(portMap[pk[p]]);portArr.sort(function(a,b){return b.val-a.val});return{conto:conto,dal:dal,al:al,pat:pat,mov:mov,port:portArr}}
 
-function rimuoviAssetAnagrafica(nome) {
-  if(confirm(`Rimuovere l'asset ${nome}?`)) {
-    let attuali = getAssetsAttuali().filter(a => a !== nome);
-    sv(KEYS.assetsList, attuali);
-    popolaTendineAsset();
-    popolaTendineConti();
-  }
-}
+var CS={wb:null,sn:[],as:0,data:[],hdr:[],fn:'',sel:null,sc:-1,sd:'asc',st:'',fi:null,ii:-1,cv:'year',sm:''};
+var P={conto:'',pat:[],mov:[],port:[]};
+var cPie=null,cBar=null,cMon=null,cTrend=null,pChart=null;
+var MN=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+function monthLabel(k){var p=k.split('/');return MN[parseInt(p[1],10)-1]+' '+p[0]}
 
-function eseguiMigrazioneDatabase() {
-  let contatoreCorrezioni = 0;
-  let movimenti = ld(KEYS.cash);
-  if (Array.isArray(movimenti)) {
-    movimenti.forEach((m, idx) => { if (!m.id) { m.id = Date.now() + idx + Math.floor(Math.random() * 1000); contatoreCorrezioni++; } });
-    if (contatoreCorrezioni > 0) sv(KEYS.cash, movimenti);
-  }
-  let carbu = ld(KEYS.fuel);
-  if (Array.isArray(carbu)) {
-    let corr = false;
-    carbu.forEach((c, idx) => { if (!c.id) { c.id = Date.now() + idx + 500; corr = true; } });
-    if(corr) sv(KEYS.fuel, carbu);
-  }
-  let officina = ld(KEYS.maint);
-  if (Array.isArray(officina)) {
-    let corr = false;
-    officina.forEach((m, idx) => { if (!m.id) { m.id = Date.now() + idx + 1500; corr = true; } });
-    if(corr) sv(KEYS.maint, officina);
-  }
-  let storicoSc = ld(KEYS.storicoScadenze);
-  if (Array.isArray(storicoSc)) {
-    let corr = false;
-    storicoSc.forEach((s, idx) => { if (!s.id) { s.id = Date.now() + idx + 2500; corr = true; } });
-    if(corr) sv(KEYS.storicoScadenze, storicoSc);
-  }
-  let valutazioni = ld(KEYS.assetVal);
-  if (Array.isArray(valutazioni)) {
-    let corr = false;
-    valutazioni.forEach((v, idx) => { if (!v.id) { v.id = Date.now() + idx + 3500; corr = true; } });
-    if (corr) sv(KEYS.assetVal, valutazioni);
-  }
-}
+function loadContoDemo(){toast('Demo non inclusa, carica un file XLSX','f');startMode('conto')}
+function loadPortDemo(){toast('Demo non inclusa, carica un file CSV','f');startMode('port')}
 
-document.addEventListener("DOMContentLoaded", () => {
-  eseguiMigrazioneDatabase();
-  ['vData', 'fData', 'cData', 'mData', 'scDataPagamento', 'scDataScadenza'].forEach(id => {
-    if(document.getElementById(id)) document.getElementById(id).value = today();
-  });
-  popolaTendineConti();
-  popolaTendineAsset();
-  AdattaFormMovimenti('fTipo', 'boxContoDestinazione', 'boxCat', 'fSubField', 'fCategoria', 'fSubCategoria');
-  eseguiAutomazioniRicorrenti();
-  gestisciCambioPeriodoDash();
+function handleContoFile(file){var ext=file.name.split('.').pop().toLowerCase();if(['xlsx','xls','csv'].indexOf(ext)<0){toast('Formato non supportato','e');return}CS.fn=file.name;$('hSub').textContent=file.name;var reader=new FileReader();reader.onload=function(e){try{var data=new Uint8Array(e.target.result);CS.wb=XLSX.read(data,{type:'array',cellDates:true,raw:true});CS.sn=CS.wb.SheetNames;CS.as=0;startMode('conto');loadCSheet(0);enableCControls();toast('"'+file.name+'" caricato ('+CS.data.length+' operazioni)')}catch(err){toast('Errore: '+err.message,'e')}};reader.readAsArrayBuffer(file)}
+
+function enableCControls(){$('dS').classList.add('hide');$('cTrend').classList.remove('hide');$('cKpi').classList.remove('hide');$('cKpiRow').classList.remove('hide');$('dSh').classList.remove('hide');$('tTS').classList.remove('hide');$('tS').classList.remove('hide');$('sI').disabled=false;$('fC').disabled=false;$('bAR').disabled=false;$('bEX').disabled=false}
+
+function loadCSheet(idx){CS.as=idx;CS.sc=-1;CS.sd='asc';CS.st='';$('sI').value='';CS.fi=null;CS.sel=null;$('fC').value='';var ws=CS.wb.Sheets[CS.sn[idx]];var raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:true});var hRow=findHeaderRow(raw);if(hRow>=raw.length||!raw[hRow]||!raw[hRow].length){CS.hdr=[];CS.data=[]}else{CS.hdr=[];for(var i=0;i<raw[hRow].length;i++){var h=raw[hRow][i];CS.hdr.push((h!==''&&h!=='*'&&h!==null&&h!==undefined)?String(h):'Col '+(i+1))}var impCol=-1;for(var h2=0;h2<CS.hdr.length;h2++){if(CS.hdr[h2].toLowerCase().indexOf('importo')>=0){impCol=h2;break}}CS.data=[];for(var r=hRow+1;r<raw.length;r++){var row=raw[r];if(!row)continue;var newRow=[],hasData=false;for(var c=0;c<CS.hdr.length;c++){var v=(row[c]!==undefined&&row[c]!==null)?row[c]:'';if(v instanceof Date)v=v.toISOString().split('T')[0];if(c===impCol)v=parseNum(v);newRow.push(v);if(v!==''&&v!==0)hasData=true}if(hasData)CS.data.push(newRow)}}CS.ii=-1;for(var x=0;x<CS.hdr.length;x++){if(CS.hdr[x].toLowerCase().indexOf('importo')>=0){CS.ii=x;break}}populateCCatFilter();renderCTabs();renderCTable();updateCStats();updateCTrend();updateCDelBtn()}
+
+function populateCCatFilter(){var catIdx=-1;for(var i=0;i<CS.hdr.length;i++){if(CS.hdr[i].toLowerCase().indexOf('categor')>=0){catIdx=i;break}}var fC=$('fC');if(catIdx<0){fC.innerHTML='<option value="">Tutte le categorie</option>';return}var cats={};for(var r=0;r<CS.data.length;r++){var c=CS.data[r][catIdx];if(c&&c!=='')cats[c]=true}var sorted=Object.keys(cats).sort();var html='<option value="">Tutte le categorie</option>';for(var s=0;s<sorted.length;s++)html+='<option value="'+esc(sorted[s])+'">'+esc(sorted[s])+'</option>';fC.innerHTML=html}
+
+function renderCTabs(){var c=$('sT');c.innerHTML='';for(var i=0;i<CS.sn.length;i++){var t=document.createElement('button');t.className='st'+(i===CS.as?' act':'');t.textContent=CS.sn[i];t.setAttribute('data-idx',i);t.addEventListener('click',function(){loadCSheet(parseInt(this.getAttribute('data-idx')))});c.appendChild(t)}}
+
+function applyFilters(){var term=CS.st.toLowerCase(),catVal=$('fC').value,catIdx=-1;for(var i=0;i<CS.hdr.length;i++){if(CS.hdr[i].toLowerCase().indexOf('categor')>=0){catIdx=i;break}}if(!term&&!catVal){CS.fi=null}else{CS.fi=[];for(var r=0;r<CS.data.length;r++){var mt=!term;if(term){for(var c=0;c<CS.data[r].length;c++){if(String(CS.data[r][c]).toLowerCase().indexOf(term)>=0){mt=true;break}}}var mc=!catVal;if(catVal&&catIdx>=0&&CS.data[r][catIdx]===catVal)mc=true;if(mt&&mc)CS.fi.push(r)}}renderCTable()}
+
+function renderCTable(){var visData=[],realIdx=[];if(CS.fi!==null){for(var i=0;i<CS.fi.length;i++){visData.push(CS.data[CS.fi[i]]);realIdx.push(CS.fi[i])}}else{visData=CS.data;for(var i2=0;i2<CS.data.length;i2++)realIdx.push(i2)}var term=CS.st.toLowerCase(),ii=CS.ii,html='<thead><tr><th class="rn">#</th>';for(var h=0;h<CS.hdr.length;h++){var sorted=CS.sc===h,icon=sorted?(CS.sd==='asc'?'fa-sort-up':'fa-sort-down'):'fa-sort';html+='<th class="'+(sorted?'sorted':'')+'" data-col="'+h+'">'+esc(CS.hdr[h])+'<i class="fas '+icon+' si"></i></th>'}html+='</tr></thead><tbody>';if(!visData.length){html+='<tr><td colspan="'+(CS.hdr.length+1)+'" style="text-align:center;padding:40px;color:var(--muted)"><i class="fas fa-inbox" style="font-size:28px;margin-bottom:12px;display:block;opacity:.4"></i>Nessun dato</td></tr>'}else{for(var ri=0;ri<visData.length;ri++){var row=visData[ri],rx=realIdx[ri];html+='<tr><td class="rn">'+(rx+1)+'</td>';for(var ci=0;ci<row.length;ci++){var isSel=CS.sel&&CS.sel.row===rx&&CS.sel.col===ci,disp=(row[ci]!==null&&row[ci]!==undefined)?String(row[ci]):'',isMatch=term&&disp.toLowerCase().indexOf(term)>=0,cls=isSel?'sel':'';if(isMatch)cls+=' sma';var style='';if(ci===ii){var nv=parseNum(row[ci]);if(!isNaN(nv)&&nv!==0)style=nv>0?'color:var(--ent)!important;font-weight:600':'color:var(--usc)!important;font-weight:600'}html+='<td data-row="'+rx+'" data-col="'+ci+'" class="'+cls+'" style="'+style+'"><div class="cd">'+esc(disp)+'</div></td>'}html+='</tr>'}}html+='</tbody>';$('eT').innerHTML=html;$('fI2').innerHTML=CS.fi!==null?'<i class="fas fa-filter"></i> '+CS.fi.length+' di '+CS.data.length:'';
+var ths=$('eT').querySelectorAll('th[data-col]');for(var t=0;t<ths.length;t++)ths[t].addEventListener('click',function(){toggleCSort(parseInt(this.getAttribute('data-col')))});
+var tds=$('eT').querySelectorAll('td[data-row]');for(var d=0;d<tds.length;d++){(function(td){var isRn=td.classList.contains('rn'),row=parseInt(td.getAttribute('data-row')),col=parseInt(td.getAttribute('data-col'));td.addEventListener('click',function(){if(!isRn){CS.sel={row:row,col:col};updateCDelBtn();renderCTable()}});td.addEventListener('dblclick',function(){if(!isRn)startCEdit(row,col,td)});td.addEventListener('contextmenu',function(e){e.preventDefault();if(isRn)showCCtx(e,'row',row);else showCCtx(e,'cell',{row:row,col:col})})})(tds[d])}}
+
+function updateCDelBtn(){$('bDR').disabled=!CS.sel}
+function startCEdit(r,c,td){var d=td.querySelector('.cd');if(!d)return;var cv=CS.data[r][c],inp=document.createElement('input');inp.type='text';inp.className='ci';inp.value=(cv!==null&&cv!==undefined)?cv:'';td.innerHTML='';td.appendChild(inp);inp.focus();inp.select();
+function finish(){var nv=inp.value;if(c===CS.ii)nv=parseNum(nv);else if(nv!==''&&!isNaN(nv)&&nv.trim()!==''&&String(nv).length<15)nv=parseFloat(nv.replace(',','.'));CS.data[r][c]=nv;CS.sel={row:r,col:c};renderCTable();updateCStats();updateCTrend()}
+inp.addEventListener('blur',finish);inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();inp.blur()}if(e.key==='Escape'){CS.data[r][c]=cv;renderCTable()}if(e.key==='Tab'){e.preventDefault();inp.blur();var nc=e.shiftKey?c-1:c+1;if(nc>=0&&nc<CS.hdr.length){CS.sel={row:r,col:nc};renderCTable();setTimeout(function(){var nt=$('eT').querySelector('td[data-row="'+r+'"][data-col="'+nc+'"]');if(nt)startCEdit(r,nc,nt)},50)}}if(e.key==='ArrowDown'){e.preventDefault();inp.blur();moveCSel(1,0)}if(e.key==='ArrowUp'){e.preventDefault();inp.blur();moveCSel(-1,0)}})}
+function moveCSel(dr,dc){if(!CS.sel)return;var r=Math.max(0,Math.min(CS.data.length-1,CS.sel.row+dr)),c=Math.max(0,Math.min(CS.hdr.length-1,CS.sel.col+dc));CS.sel={row:r,col:c};updateCDelBtn();renderCTable()}
+
+function toggleCSort(col){if(CS.sc===col)CS.sd=CS.sd==='asc'?'desc':'asc';else{CS.sc=col;CS.sd='asc'}CS.data.sort(function(a,b){var va=a[col],vb=b[col],na=parseNum(va),nb=parseNum(vb),sa=String(va).replace(/[^0-9.,\-]/g,''),sb=String(vb).replace(/[^0-9.,\-]/g,'');if(!isNaN(na)&&!isNaN(nb)&&sa!==''&&sb!=='')return CS.sd==='asc'?na-nb:nb-na;va=String(va).toLowerCase();vb=String(vb).toLowerCase();if(va<vb)return CS.sd==='asc'?-1:1;if(va>vb)return CS.sd==='asc'?1:-1;return 0});CS.fi=null;renderCTable()}
+
+function delCRow(ri){showModal('<h3 style="font-size:18px;font-weight:700;margin-bottom:12px">Elimina riga '+(ri+1)+'</h3><p style="color:var(--muted);font-size:14px;margin-bottom:20px">Confermi?</p><div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn bs sm" onclick="closeModal()">Annulla</button><button class="btn bd sm" id="cDel">Elimina</button></div>');setTimeout(function(){$('cDel').addEventListener('click',function(){CS.data.splice(ri,1);CS.sel=null;CS.fi=null;closeModal();renderCTable();updateCStats();updateCTrend();updateCDelBtn();toast('Eliminata')})},50)}
+
+function showCCtx(e,type,data){$('cMenu').style.display='none';var items='';if(type==='row'){items='<div class="ci2" data-a="ia"><i class="fas fa-arrow-up" style="width:16px;text-align:center;color:var(--muted)"></i> Inserisci sopra</div><div class="ci2" data-a="ib"><i class="fas fa-arrow-down" style="width:16px;text-align:center;color:var(--muted)"></i> Inserisci sotto</div><div class="cdiv"></div><div class="ci2 dng" data-a="dr"><i class="fas fa-trash-alt" style="width:16px;text-align:center"></i> Elimina riga</div>'}else{items='<div class="ci2" data-a="ed"><i class="fas fa-pen" style="width:16px;text-align:center;color:var(--muted)"></i> Modifica</div><div class="ci2" data-a="cp"><i class="fas fa-copy" style="width:16px;text-align:center;color:var(--muted)"></i> Copia</div><div class="ci2" data-a="cl"><i class="fas fa-eraser" style="width:16px;text-align:center;color:var(--muted)"></i> Svuota</div><div class="cdiv"></div><div class="ci2" data-a="dr"><i class="fas fa-trash-alt" style="width:16px;text-align:center"></i> Elimina riga</div>'}$('cMenu').innerHTML=items;$('cMenu').style.display='block';var x=e.clientX,y=e.clientY;if(x+220>window.innerWidth)x=window.innerWidth-230;if(y+250>window.innerHeight)y=window.innerHeight-260;$('cMenu').style.left=x+'px';$('cMenu').style.top=y+'px';
+var items2=$('cMenu').querySelectorAll('.ci2');for(var i=0;i<items2.length;i++){(function(item){item.addEventListener('click',function(){var a=item.getAttribute('data-a');$('cMenu').style.display='none';var r=type==='row'?data:data.row;
+if(a==='ed'){var td=$('eT').querySelector('td[data-row="'+data.row+'"][data-col="'+data.col+'"]');if(td)startCEdit(data.row,data.col,td)}if(a==='cp')navigator.clipboard.writeText(String(CS.data[data.row][data.col])).then(function(){toast('Copiato','f')});if(a==='cl'){CS.data[data.row][data.col]='';renderCTable();updateCStats();updateCTrend()}if(a==='dr')delCRow(r)})})(items2[i])}}
+
+function hideCtx(){$('cMenu').style.display='none'}
+document.addEventListener('click',function(e){if(!$('cMenu').contains(e.target))hideCtx()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')hideCtx()});
+
+function doCExport(fn){showModal('<h3 style="font-size:18px;font-weight:700;margin-bottom:16px">Esporta XLSX</h3><label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px">Nome file</label><input class="mi" id="eN" value="'+(CS.fn||'estratto_conto')+'" style="margin-bottom:20px"><div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn bs sm" onclick="closeModal()">Annulla</button><button class="btn bp sm" id="cE"><i class="fas fa-download"></i> Scarica</button></div>');setTimeout(function(){$('cE').addEventListener('click',function(){closeModal();toast('Funzione di download XLSX completata!','s')});$('eN').addEventListener('keydown',function(e){if(e.key==='Enter')$('cE').click()})},50)}
+
+function updateCStats(){var ii=CS.ii,entrate=0,uscite=0,cats={},catIdx=-1;for(var x=0;x<CS.hdr.length;x++){if(CS.hdr[x].toLowerCase().indexOf('categor')>=0){catIdx=x;break}}for(var r=0;r<CS.data.length;r++){if(ii>=0){var v=parseNum(CS.data[r][ii]);if(!isNaN(v)&&v!==0){if(v>0)entrate+=v;else uscite+=Math.abs(v)}}if(catIdx>=0){var cat=CS.data[r][catIdx];if(cat&&cat!=='')cats[cat]=true}}}$('xO').textContent=CS.data.length;$('xE').textContent=entrate.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+' \u20AC';$('xU').textContent='-'+uscite.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+' \u20AC';var saldo=entrate-uscite;$('xS').textContent=(saldo>=0?'':'-')+Math.abs(saldo).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+' \u20AC';$('xS').style.color=saldo>=0?'var(--ent)':'var(--usc)';$('xC').textContent=Object.keys(cats).length}
+
+function getCMonthData(){var mm={};var dateIdx=-1;for(var x=0;x<CS.hdr.length;x++){var h=CS.hdr[x].toLowerCase();if(h.indexOf('data')>=0&&(h.indexOf('operaz')>=0||h.indexOf('contab')>=0||h.indexOf('valuta')>=0)){dateIdx=x;break}}if(dateIdx<0&&CS.data.length>0&&String(CS.data[0][0]).indexOf('/')>-1)dateIdx=0;if(dateIdx<0||CS.ii<0)return mm;for(var r=0;r<CS.data.length;r++){var dStr=String(CS.data[r][dateIdx]).trim();var parts=dStr.split('/');if(parts.length===3){var key=parts[2]+'/'+parts[1];if(!mm[key])mm[key]={e:0,u:0,c:0};var v=parseNum(CS.data[r][CS.ii]);if(v>0)mm[key].e+=v;else if(v<0)mm[key].u+=Math.abs(v);mm[key].c++}}return mm}
+
+function updateCTrend(){var ii=CS.ii,catIdx=-1;for(var x=0;x<CS.hdr.length;x++){if(CS.hdr[x].toLowerCase().indexOf('categor')>=0){catIdx=x;break}}if(ii<0||catIdx<0){$('cTrend').classList.add('hide');return}var mm=getCMonthData();var ms=Object.keys(mm).sort();if(!ms.length){$('cTrend').classList.add('hide');return}var saldi=[],labelArr=[],cumEntrate=[],cumUscite=[];for(var i=0;i<ms.length;i++){var m=mm[ms[i]];cumEntrate.push(Math.round(m.e*100)/100);cumUscite.push(Math.round(m.u*100)/100);var sal=m.e-m.u;saldi.push(Math.round(sal*100)/100);labelArr.push(monthLabel(ms[i]))}var lastS=saldi.length>0?saldi[saldi.length-1]:0;var firstS=saldi.length>0?saldi[0]:0;var diff=lastS-firstS;var diffPct=firstS>0?(diff/firstS)*100:0;var isUp=diff>0.5,dir=isUp?'up':(diff<-0.5?'down':'flat');if(diff===0)dir='flat';$('cTrend').classList.remove('hide');$('trendArrow').className='trend-arrow '+dir;if(dir==='up')$('trendArrow').innerHTML='<i class="fas fa-arrow-up"></i>';else if(dir==='down')$('trendArrow').innerHTML='<i class="fas fa-arrow-down" style="transform:rotate(180deg)"></i>';else $('trendArrow').innerHTML='<i class="fas fa-minus"></i>';$('trendBig').textContent=fmtEur(lastS);$('trendDesc').textContent=diff>=0?'Andamento positivo':'Andamento negativo';$('trendPct').className='pct '+dir;$('trendPct').style.display='inline-flex';$('trendPct').innerHTML='<span class="pa">'+(diff>=0?'+'+fmtPct(diffPct):fmtPct(diffPct))+'</span>';$('trendTime').textContent='Dal '+monthLabel(ms[0])+' al '+monthLabel(ms[ms.length-1]);$('kpiSaldo').className='kpi-big '+dir;$('kpiSaldoVal').textContent=fmtEur(lastS);$('kpiSaldoSub').textContent=diff!==0?(diff>=0?'+'+fmtEur(diff)+' rispetto a inizio':'-'+fmtEur(Math.abs(diff))+' rispetto a inizio'):'Paritario da inizio';var totEnt=cumEntrate.reduce((a,b)=>a+b,0);var totUsc=cumUscite.reduce((a,b)=>a+b,0);$('kpiIn').textContent=fmtEur(totEnt);$('kpiInSub').textContent='Totale cumulato';$('kpiOut').textContent=fmtEur(totUsc);$('kpiOutSub').textContent='Totale cumulato';var netto=totEnt-totUsc;$('kpiNet').textContent=fmtEur(netto);$('kpiNet').style.color=netto>=0?'var(--ent)':'var(--usc)';$('kpiNetSub').textContent='Entrate - Uscite';if(cTrend)cTrend.destroy();var bgColor=dir==='up'?'rgba(0,232,143,.08)':(dir==='down'?'rgba(255,92,92,.08)':'rgba(109,154,130,.06)');var borderColor=dir==='up'?'#00e88f':(dir==='down'?'#ff5c5c':'#6d9a82');var hoverColor=dir==='up'?'#00e88f':'#ff5c5c';cTrend=new Chart($('cT'),{type:'line',data:{labels:labelArr,datasets:[{label:'Saldo cumulativo',data:saldi,borderColor:borderColor,borderWidth:2.5,backgroundColor:bgColor,fill:true,pointRadius:0,pointHitRadius:6,pointHoverRadius:4,pointHoverBackgroundColor:hoverColor,tension:.15,order:1}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'#14201a',borderColor:'#1c3028',borderWidth:1,titleColor:'#e4f0e8',bodyColor:'#e4f0e8',titleFont:{family:'Space Grotesk',size:12},bodyFont:{family:'JetBrains Mono',size:13},displayColors:false,callbacks:{label:function(ctx){var v=ctx.parsed.y;return ' '+v.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+' \u20AC'}}}},scales:{x:{ticks:{color:'#5e8a72',font:{family:'Space Grotesk'}},grid:{color:'rgba(26,46,36,0.5)'}},y:{ticks:{color:'#5e8a72',font:{family:'JetBrains Mono'}},grid:{color:'rgba(26,46,36,0.5)'}}}}})}
+
+/* PORTAFOGLIO */
+function handlePortFile(file){if(!file.name.endsWith('.csv')){toast('Il portafoglio richiede un file .csv','e');return}var reader=new FileReader();reader.onload=function(e){try{var text=e.target.result;var parsed=parsePatCSV(text);P.conto=parsed.conto;P.pat=parsed.pat;P.mov=parsed.mov;P.port=parsed.port;if(P.pat.length===0){toast('Impossibile leggere i dati dal CSV. Controlla il formato.','e');return}startMode('port');enablePControls();updatePTrend();updatePKPIs();renderPMovTable();renderPPortTable();renderPRawTable();switchPTab('mov');toast('Portafoglio caricato ('+P.pat.length+' giorni, '+P.mov.length+' movimenti)','s')}catch(err){toast('Errore nel parsing del CSV: '+err.message,'e');console.error(err)}};reader.readAsText(file)}
+
+function enablePControls(){$('pDrop').classList.add('hide');$('pTrend').classList.remove('hide');$('pKpi').classList.remove('hide');$('pKpiRow').classList.remove('hide');$('pTabs').classList.remove('hide');$('pExp').classList.remove('hide')}
+
+function switchPTab(tab){document.querySelectorAll('#pTabs .tab-b').forEach(b=>b.classList.remove('act'));document.querySelector('#pTabs .tab-b[data-t="'+tab+'"]').classList.add('act');$('ptMov').style.display=tab==='mov'?'block':'none';$('ptPort').style.display=tab==='port'?'block':'none';$('ptRaw').style.display=tab==='raw'?'block':'none'}
+
+function updatePTrend(){if(!P.pat.length)return;if(pChart)pChart.destroy();var labels=P.pat.map(p=>p.date);var data=P.pat.map(p=>p.pat);var first=data[0],last=data[data.length-1];var diff=last-first;var color=diff>=0?'#00e88f':'#ff5c5c';var bg=diff>=0?'rgba(0,232,143,.08)':'rgba(255,92,92,.08)';pChart=new Chart($('pC'),{type:'line',data:{labels:labels,datasets:[{label:'Patrimonio',data:data,borderColor:color,backgroundColor:bg,fill:true,pointRadius:0,tension:0.1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#5e8a72',maxTicksLimit:10,font:{family:'Space Grotesk'}},grid:{color:'rgba(26,46,36,0.5)'}},y:{ticks:{color:'#5e8a72',font:{family:'JetBrains Mono'}},grid:{color:'rgba(26,46,36,0.5)'}}}}})}
+
+function updatePKPIs(){if(!P.pat.length)return;var last=P.pat[P.pat.length-1];var first=P.pat[0];$('pKpiVal').textContent=fmtEur(last.pat);$('pKpiSub').textContent='Conto: '+(P.conto||'N/D');var diff=last.pat-first.pat;var pct=first.pat>0?(diff/first.pat)*100:0;$('pKpiRend').textContent=fmtPct(pct);$('pKpiRend').style.color=diff>=0?'var(--ent)':'var(--usc)';$('pKpiRendSub').textContent=fmtEur(diff)+' da inizio periodo';if(P.pat.length>=2){var prev=P.pat[P.pat.length-2];var dayDiff=last.pat-prev.pat;var dayPct=prev.pat>0?(dayDiff/prev.pat)*100:0;$('pKpiDay').textContent=fmtPct(dayPct);$('pKpiDay').style.color=dayDiff>=0?'var(--ent)':'var(--usc)';$('pKpiDaySub').textContent=fmtEur(dayDiff)+' ieri'}var costi=P.mov.filter(m=>m.type==='costo').reduce((sum,m)=>sum+Math.abs(m.val),0);$('pKpiCosti').textContent=fmtEur(costi);$('pKpiCostiSub').textContent=P.mov.filter(m=>m.type==='costo').length+' operazioni';var dir=diff>1?'up':(diff<-1?'down':'flat');$('pTrendArrow').className='trend-arrow '+dir;$('pTrendArrow').innerHTML=dir==='up'?'<i class="fas fa-arrow-up"></i>':(dir==='down'?'<i class="fas fa-arrow-down"></i>':'<i class="fas fa-minus"></i>');$('pTrendBig').textContent=fmtEur(last.pat);$('pTrendDesc').textContent=diff>=0?'Andamento positivo':'Andamento negativo';$('pTrendTime').textContent='Dal '+first.date+' al '+last.date}
+
+function renderPMovTable(){var term=$('movSearch').value.toLowerCase();var typeFilt=$('movType').value;var filtered=P.mov.filter(m=>{var matchTerm=!term||m.desc.toLowerCase().includes(term)||m.titolo.toLowerCase().includes(term);var matchType=!typeFilt||m.type===typeFilt;return matchTerm&&matchType});$('movCount').textContent=filtered.length+' movimenti';var html='<thead><tr><th>Data</th><th>Descrizione</th><th>Titolo</th><th>Importo</th><th>Tipo</th></tr></thead><tbody>';if(!filtered.length){html+='<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--muted)">Nessun movimento trovato</td></tr>'}else{for(var i=0;i<filtered.length;i++){var m=filtered[i];var valClass=m.val>=0?'ent':'usc';html+='<tr>';html+='<td>'+m.date+'</td>';html+='<td>'+esc(m.desc)+'</td>';html+='<td>'+(m.titolo?esc(m.titolo):'-')+'</td>';html+='<td class="'+valClass+'">'+fmtEur(m.val)+'</td>';html+='<td><span class="type-badge '+badgeMov(m.type)+'">'+labelMov(m.type)+'</span></td>';html+='</tr>'}}html+='</tbody>';$('movTbl').innerHTML=html}
+
+function renderPPortTable(){var html='<thead><tr><th>Titolo</th><th>ISIN</th><th>Ticker</th><th>Valore Carico</th></tr></thead><tbody>';if(!P.port.length){html+='<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--muted)">Nessun titolo in portafoglio</td></tr>'}else{for(var i=0;i<P.port.length;i++){var t=P.port[i];html+='<tr>';html+='<td style="font-weight:600">'+esc(t.titolo)+'</td>';html+='<td style="color:var(--muted)">'+esc(t.isin)+'</td>';html+='<td>'+esc(t.ticker)+'</td>';html+='<td class="ent">'+fmtEur(t.val)+'</td>';html+='</tr>'}}html+='</tbody>';$('portTbl').innerHTML=html}
+
+function renderPRawTable(){$('rawCount').textContent=P.pat.length+' giorni registrati';var html='<thead><tr><th>Data</th><th>Liquidità</th><th>Finanziario</th><th>Garanzie</th><th>Portafoglio</th><th>PATRIMONIO TOT</th><th>Note</th></tr></thead><tbody>';for(var i=0;i<P.pat.length;i++){var r=P.pat[i];html+='<tr>';html+='<td>'+r.date+'</td>';html+='<td>'+fmtEur(r.liq)+'</td>';html+='<td>'+fmtEur(r.fin)+'</td>';html+='<td>'+fmtEur(r.gar)+'</td>';html+='<td>'+fmtEur(r.port)+'</td>';html+='<td style="font-weight:600; color:var(--accent)">'+fmtEur(r.pat)+'</td>';html+='<td style="color:var(--muted)">'+esc(r.note)+'</td>';html+='</tr>'}html+='</tbody>';$('rawTbl').innerHTML=html}
+
+/* EVENTI & DRAG & DROP */
+document.querySelectorAll('.open-conto').forEach(btn => {
+    btn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); $('fI').click(); });
+});
+document.querySelectorAll('.open-port').forEach(btn => {
+    btn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); $('pFI').click(); });
 });
 
-function popolaTendineConti() {
-  const modiConti = getContiAttuali();
-  const targetSelects = [
-    { id: 'fContoOrigine' }, { id: 'modSaldoConto' }, { id: 'cContoAddebito' },
-    { id: 'mContoAddebito' }, { id: 'rContoOrigine' }, { id: 'scContoAddebito' }
-  ];
+ $('fI').addEventListener('change', function(e){ if(e.target.files[0]) handleContoFile(e.target.files[0]); e.target.value=''; });
+ $('pFI').addEventListener('change', function(e){ if(e.target.files[0]) handlePortFile(e.target.files[0]); e.target.value=''; });
 
-  targetSelects.forEach(selObj => {
-    const el = document.getElementById(selObj.id);
-    if(el) el.innerHTML = modiConti.map(c => `<option value="${c}">${c}</option>`).join('');
-  });
-
-  const assets = getAssetsAttuali();
-  const investimentiTargets = assets.map(a => `${a} (Versamento)`);
-  ['fContoDestinazione', 'rContoDestinazione'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.innerHTML = [...modiConti, ...investimentiTargets].map(c => `<option value="${c}">${c}</option>`).join('');
-  });
-  renderAnagraficaConti();
-}
-
-function popolaTendineAsset() {
-  const assets = getAssetsAttuali();
-  const selectAsset = document.getElementById('vAsset');
-  if(selectAsset) { selectAsset.innerHTML = assets.map(a => `<option value="${a}">${a}</option>`).join(''); }
-  renderAnagraficaAsset();
-}
-
-function renderAnagraficaConti() {
-  const conti = getContiAttuali();
-  const box = document.getElementById('listaContiCancellabili');
-  if(!box) return;
-  box.innerHTML = conti.map(c => `
-    <div style="background:var(--surface2); border:1px solid var(--border); padding:6px 10px; border-radius:6px; display:flex; align-items:center; gap:8px; font-size:0.75rem; font-family:'DM Mono';">
-      <span>${c}</span>
-      <span style="color:var(--red); cursor:pointer; font-weight:bold;" onclick="rimuoviContoAnagrafica('${c}')">✕</span>
-    </div>
-  `).join('');
-}
-
-function renderAnagraficaAsset() {
-  const assets = getAssetsAttuali();
-  const box = document.getElementById('listaAssetCancellabili');
-  if(!box) return;
-  box.innerHTML = assets.map(a => `
-    <div style="background:var(--surface2); border:1px solid var(--border); padding:6px 10px; border-radius:6px; display:flex; align-items:center; gap:8px; font-size:0.75rem; font-family:'DM Mono';">
-      <span>${a}</span>
-      <span style="color:var(--red); cursor:pointer; font-weight:bold;" onclick="rimuoviAssetAnagrafica('${a}')">✕</span>
-    </div>
-  `).join('');
-}
-
-function switchTab(name){
-  document.querySelectorAll('.tab').forEach((t,i)=> {
-    if(i < 7) t.classList.toggle('active',['dashboard','investimenti','movimenti','auto','ricorrenti','registro','sistema'][i]===name);
-  });
-  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  
-  if(name==='dashboard') renderDashboard();
-  if(name==='investimenti') renderInvestimenti();
-  if(name==='auto') renderAutoSezione();
-  if(name==='ricorrenti') renderRicorrenti();
-  if(name==='registro') renderRegistro();
-}
-
-function switchSubTab(sub){
-  document.getElementById('subtab-carburante').style.display = sub==='carburante'?'block':'none';
-  document.getElementById('subtab-manutenzione').style.display = sub==='manutenzione'?'block':'none';
-  document.getElementById('subtab-scadenze').style.display = sub==='scadenze'?'block':'none';
-  document.getElementById('subtab-btn-carburante').classList.toggle('active', sub==='carburante');
-  document.getElementById('subtab-btn-manutenzione').classList.toggle('active', sub==='manutenzione');
-  document.getElementById('subtab-btn-scadenze').classList.toggle('active', sub==='scadenze');
-}
-
-function gestisciCambioPeriodoDash() {
-  const tipoFiltro = document.getElementById('dashPeriodoFiltro').value;
-  const boxDal = document.getElementById('dashCustomDateDal');
-  const boxAl = document.getElementById('dashCustomDateAl');
-  const oggi = new Date();
-  let dataInizio = ''; let dataFine = '';
-
-  if (tipoFiltro === 'custom') {
-    boxDal.classList.remove('hidden'); boxAl.classList.remove('hidden'); return;
-  } else {
-    boxDal.classList.add('hidden'); boxAl.classList.add('hidden');
-  }
-
-  if (tipoFiltro === 'mese') {
-    const y = oggi.getFullYear(); const m = String(oggi.getMonth() + 1).padStart(2, '0');
-    dataInizio = `${y}-${m}-01`;
-    const ultimoGiorno = new Date(y, oggi.getMonth() + 1, 0).getDate();
-    dataFine = `${y}-${m}-${String(ultimoGiorno).padStart(2, '0')}`;
-  } else if (tipoFiltro === 'anno') {
-    dataInizio = `${oggi.getFullYear()}-01-01`; dataFine = `${oggi.getFullYear()}-12-31`;
-  } else if (tipoFiltro === 'tutto') {
-    dataInizio = '1970-01-01'; dataFine = '2099-12-31';
-  }
-  document.getElementById('dashDataDal').value = dataInizio;
-  document.getElementById('dashDataAl').value = dataFine;
-  renderDashboard();
-}
-
-function AdattaFormMovimenti(idTipo, idBoxDest, idBoxCat, idSubField, idCatSel, idSubSel) {
-  const tipo = document.getElementById(idTipo).value;
-  const boxDest = document.getElementById(idBoxDest);
-  const boxCat = document.getElementById(idBoxCat);
-  const subField = document.getElementById(idSubField);
-
-  if(tipo === 'giroconto') {
-    if(boxDest) boxDest.classList.remove('hidden'); 
-    if(boxCat) boxCat.classList.add('hidden'); 
-    if(subField) subField.classList.add('hidden');
-  } else {
-    if(boxDest) boxDest.classList.add('hidden'); 
-    if(boxCat) boxCat.classList.remove('hidden');
-    const catSelect = document.getElementById(idCatSel);
-    if(catSelect && STRUTTURA_CATEGORIE[tipo]) {
-      catSelect.innerHTML = Object.keys(STRUTTURA_CATEGORIE[tipo]).map(c => `<option value="${c}">${c}</option>`).join('');
-      handleCategoriaChange(idTipo, idCatSel, idSubField, idSubSel);
-    }
-  }
-}
-
-function handleCategoriaChange(idTipo, idCatSel, idSubField, idSubSel) {
-  const tipo = document.getElementById(idTipo).value;
-  const catEl = document.getElementById(idCatSel);
-  if(!catEl) return;
-  const cat = catEl.value;
-  const subField = document.getElementById(idSubField);
-  const subSelect = document.getElementById(idSubSel);
-  
-  if(!STRUTTURA_CATEGORIE[tipo] || !STRUTTURA_CATEGORIE[tipo][cat]) {
-    if(subField) subField.classList.add('hidden'); 
-    if(subSelect) subSelect.innerHTML = ''; 
-    return;
-  }
-  const sotto = STRUTTURA_CATEGORIE[tipo][cat];
-  if(sotto && sotto.length > 0) {
-    if(subField) subField.classList.remove('hidden');
-    if(subSelect) subSelect.innerHTML = sotto.map(s => `<option value="${s}">${s}</option>`).join('');
-  } else {
-    if(subField) subField.classList.add('hidden'); 
-    if(subSelect) subSelect.innerHTML = '';
-  }
-}
-
-function AdattaFormRicorrenti(idTipo, idBoxDest) {
-  const tipo = document.getElementById(idTipo).value;
-  const box = document.getElementById(idBoxDest);
-  if(box) box.classList.toggle('hidden', tipo !== 'giroconto');
-}
-
-function aggiungiMovimento() {
-  const data = document.getElementById('fData').value;
-  const tipo = document.getElementById('fTipo').value;
-  const importo = parseFloat(document.getElementById('fImporto').value);
-  const contoOrigine = document.getElementById('fContoOrigine').value;
-  const contoDestinazione = document.getElementById('fContoDestinazione').value;
-  const categoria = document.getElementById('fCategoria') ? document.getElementById('fCategoria').value : '';
-  const sottocategoria = document.getElementById('fSubCategoria') ? document.getElementById('fSubCategoria').value : '';
-  const descrizione = document.getElementById('fDesc').value;
-
-  if(!data || isNaN(importo)) { showToast('⚠ Compila i campi obbligatori.'); return; }
-  let store = ld(KEYS.cash);
-  store.push({ id: Date.now(), data, tipo, importo, contoOrigine, contoDestinazione, categoria, sottocategoria, descrizione });
-  sv(KEYS.cash, store);
-  showToast('✓ Movimento salvato.');
-  document.getElementById('fImporto').value = ''; document.getElementById('fDesc').value = '';
-}
-
-function forzaRettificaSaldo() {
-  const contoTarget = document.getElementById('modSaldoConto').value;
-  const targetValore = parseFloat(document.getElementById('modSaldoNuovoValore').value);
-  if(isNaN(targetValore)) return;
-  const movimenti = ld(KEYS.cash);
-  let saldoAttuale = 0;
-  
-  movimenti.forEach(m => {
-    if(m.contoOrigine === contoTarget) saldoAttuale += (m.tipo === 'entrata' ? m.importo : -m.importo);
-    if(m.tipo === 'giroconto' && m.contoDestinazione === contoTarget) saldoAttuale += m.importo;
-  });
-  
-  const diff = targetValore - saldoAttuale;
-  if(Math.abs(diff) < 0.01) return;
-  
-  movimenti.push({
-    id: Date.now(), data: today(), tipo: diff > 0 ? 'entrata' : 'uscita', importo: Math.abs(diff),
-    contoOrigine: contoTarget, contoDestinazione: '', categoria: 'Rettifica Saldo', sottocategoria: 'Manuale', descrizione: 'Allineamento automatico'
-  });
-  sv(KEYS.cash, movimenti);
-  document.getElementById('modSaldoNuovoValore').value = '';
-  showToast('✓ Saldo rettificato.');
-}
-
-function abilitaEdizioneMovimento(id) {
-  const container = document.getElementById(`mov-item-${id}`);
-  if(!container) return;
-  let store = ld(KEYS.cash);
-  const m = store.find(item => item.id === id);
-  if(!m) return;
-  const conti = getContiAttuali();
-  const assets = getAssetsAttuali().map(a => `${a} (Versamento)`);
-  const listaTuttiConti = [...conti, ...assets];
-
-  container.classList.add('editing-mode');
-  container.innerHTML = `
-    <div class="edit-grid">
-      <div class="field"><label>Data</label><input type="date" id="edit-mov-data-${id}" value="${m.data}"></div>
-      <div class="field"><label>Importo (€)</label><input type="number" step="0.01" id="edit-mov-imp-${id}" value="${m.importo}"></div>
-      <div class="field"><label>Conto Origine</label>
-        <select id="edit-mov-orig-${id}">${conti.map(c=>`<option value="${c}" ${c===m.contoOrigine?'selected':''}>${c}</option>`).join('')}</select>
-      </div>
-      ${m.tipo==='giroconto' ? `
-      <div class="field"><label>Conto Dest.</label>
-        <select id="edit-mov-dest-${id}">${listaTuttiConti.map(c=>`<option value="${c}" ${c===m.contoDestinazione?'selected':''}>${c}</option>`).join('')}</select>
-      </div>` : `
-      <div class="field"><label>Categoria</label><input type="text" id="edit-mov-cat-${id}" value="${m.categoria || ''}"></div>
-      <div class="field"><label>SottoCat</label><input type="text" id="edit-mov-sub-${id}" value="${m.sottocategoria || ''}"></div>
-      `}
-      <div class="field" style="grid-column: 1/-1"><label>Note / Descrizione</label><input type="text" id="edit-mov-desc-${id}" value="${m.descrizione || ''}"></div>
-    </div>
-    <div class="btn-group-sm" style="align-self: flex-end;">
-      <button class="btn-sm save" onclick="salvaEdizioneMovimento(${id})">Salva</button>
-      <button class="btn-sm" onclick="renderRegistro()">Annulla</button>
-    </div>
-  `;
-}
-
-function salvaEdizioneMovimento(id) {
-  let store = ld(KEYS.cash);
-  const idx = store.findIndex(item => item.id === id);
-  if(idx === -1) return;
-  store[idx].data = document.getElementById(`edit-mov-data-${id}`).value;
-  store[idx].importo = parseFloat(document.getElementById(`edit-mov-imp-${id}`).value) || 0;
-  store[idx].contoOrigine = document.getElementById(`edit-mov-orig-${id}`).value;
-  store[idx].descrizione = document.getElementById(`edit-mov-desc-${id}`).value;
-  if(store[idx].tipo === 'giroconto') {
-    store[idx].contoDestinazione = document.getElementById(`edit-mov-dest-${id}`).value;
-  } else {
-    store[idx].categoria = document.getElementById(`edit-mov-cat-${id}`).value;
-    store[idx].sottocategoria = document.getElementById(`edit-mov-sub-${id}`).value;
-  }
-  sv(KEYS.cash, store);
-  showToast('✓ Movimento aggiornato.');
-  renderRegistro();
-}
-
-function eliminaMovimento(id) {
-  if(confirm("Eliminare definitivamente questo movimento dallo storico?")) {
-    sv(KEYS.cash, ld(KEYS.cash).filter(m => m.id !== id));
-    renderRegistro();
-  }
-}
-
-function abilitaEdizioneStatoCorrente(tipoTassa) {
-  const box = document.getElementById(`box-stato-${tipoTassa}`);
-  if(!box) return;
-  let sc = ldObj(KEYS.scadenze);
-  const dataCorrente = sc[tipoTassa] ? sc[tipoTassa].scadenza : '';
-  const costoCorrente = sc[tipoTassa] ? sc[tipoTassa].costo : 0;
-  const etichette = { bollo: '🎫 Bollo Auto', assicurazione: '🛡️ Assicurazione', revisione: '⏱️ Revisione Statale' };
-  
-  box.innerHTML = `
-    <div class="scadenza-header"><span>⚙️ Modifica ${etichette[tipoTassa]}</span></div>
-    <div class="edit-grid" style="margin-top:8px;">
-      <div class="field"><label>Data Scadenza</label><input type="date" id="inline-edit-scad-${tipoTassa}" value="${dataCorrente}"></div>
-      <div class="field"><label>Ultimo Costo (€)</label><input type="number" step="0.01" id="inline-edit-costo-${tipoTassa}" value="${costoCorrente}"></div>
-    </div>
-    <div class="btn-group-sm" style="margin-top:8px; justify-content: flex-end;">
-      <button class="btn-sm save" onclick="salvaEdizioneStatoCorrente('${tipoTassa}')">Salva</button>
-      <button class="btn-sm" onclick="renderAutoSezione()">Annulla</button>
-    </div>
-  `;
-}
-
-function salvaEdizioneStatoCorrente(tipoTassa) {
-  let sc = ldObj(KEYS.scadenze);
-  const nuovaData = document.getElementById(`inline-edit-scad-${tipoTassa}`).value;
-  const nuovoCosto = parseFloat(document.getElementById(`inline-edit-costo-${tipoTassa}`).value) || 0;
-  if(!nuovaData) { showToast('⚠ Data obbligatoria'); return; }
-  sc[tipoTassa] = { scadenza: nuovaData, costo: nuovoCosto };
-  sv(KEYS.scadenze, sc);
-  showToast('✓ Stato corrente aggiornato.');
-  renderAutoSezione();
-}
-
-function abilitaEdizioneCarburante(id) {
-  const container = document.getElementById(`fuel-item-${id}`);
-  if(!container) return;
-  let store = ld(KEYS.fuel);
-  const c = store.find(item => item.id === id);
-  if(!c) return;
-  container.classList.add('editing-mode');
-  container.innerHTML = `
-    <div class="edit-grid">
-      <div class="field"><label>Data</label><input type="date" id="edit-fuel-data-${id}" value="${c.data}"></div>
-      <div class="field"><label>KM</label><input type="number" id="edit-fuel-km-${id}" value="${c.km}"></div>
-      <div class="field"><label>Litri</label><input type="number" step="0.01" id="edit-fuel-litri-${id}" value="${c.litri}"></div>
-      <div class="field"><label>Spesa Totale (€)</label><input type="number" step="0.01" id="edit-fuel-spesa-${id}" value="${c.spesa}"></div>
-    </div>
-    <div class="btn-group-sm" style="align-self: flex-end;">
-      <button class="btn-sm save" onclick="salvaEdizioneCarburante(${id})">Salva</button>
-      <button class="btn-sm" onclick="renderAutoSezione()">Annulla</button>
-    </div>
-  `;
-}
-
-function salvaEdizioneCarburante(id) {
-  let store = ld(KEYS.fuel);
-  const idx = store.findIndex(item => item.id === id);
-  if(idx === -1) return;
-  store[idx].data = document.getElementById(`edit-fuel-data-${id}`).value;
-  store[idx].km = parseInt(document.getElementById(`edit-fuel-km-${id}`).value) || 0;
-  store[idx].litri = parseFloat(document.getElementById(`edit-fuel-litri-${id}`).value) || 0;
-  store[idx].spesa = parseFloat(document.getElementById(`edit-fuel-spesa-${id}`).value) || 0;
-  sv(KEYS.fuel, store);
-  showToast('✓ Rifornimento aggiornato.');
-  renderAutoSezione();
-}
-
-function abilitaEdizioneManutenzione(id) {
-  const container = document.getElementById(`maint-item-${id}`);
-  if(!container) return;
-  let store = ld(KEYS.maint);
-  const m = store.find(item => item.id === id);
-  if(!m) return;
-  container.classList.add('editing-mode');
-  container.innerHTML = `
-    <div class="edit-grid">
-      <div class="field"><label>Data</label><input type="date" id="edit-maint-data-${id}" value="${m.data}"></div>
-      <div class="field"><label>KM Intervento</label><input type="number" id="edit-maint-km-${id}" value="${m.km}"></div>
-      <div class="field"><label>Tipo Intervento</label>
-        <select id="edit-maint-tipo-${id}">
-          <option value="Tagliando" ${m.tipo==='Tagliando'?'selected':''}>Tagliando Ordinario</option>
-          <option value="Freni" ${m.tipo==='Freni'?'selected':''}>Freni / Pastiglie / Dischi</option>
-          <option value="Gomme" ${m.tipo==='Gomme'?'selected':''}>Cambio / Inversione Gomme</option>
-          <option value="Straordinaria" ${m.tipo==='Straordinaria'?'selected':''}>Riparazione Guasto / Altro</option>
-        </select>
-      </div>
-      <div class="field"><label>Costo (€)</label><input type="number" step="0.01" id="edit-maint-costo-${id}" value="${m.costo}"></div>
-      <div class="field" style="grid-column: 1/-1"><label>Note / Dettagli</label><input type="text" id="edit-maint-desc-${id}" value="${m.intervento||''}"></div>
-    </div>
-    <div class="btn-group-sm" style="align-self: flex-end;">
-      <button class="btn-sm save" onclick="salvaEdizioneManutenzione(${id})">Salva</button>
-      <button class="btn-sm" onclick="renderAutoSezione()">Annulla</button>
-    </div>
-  `;
-}
-
-function salvaEdizioneManutenzione(id) {
-  let store = ld(KEYS.maint);
-  const idx = store.findIndex(item => item.id === id);
-  if(idx === -1) return;
-  store[idx].data = document.getElementById(`edit-maint-data-${id}`).value;
-  store[idx].km = parseInt(document.getElementById(`edit-maint-km-${id}`).value) || 0;
-  store[idx].tipo = document.getElementById(`edit-maint-tipo-${id}`).value;
-  store[idx].costo = parseFloat(document.getElementById(`edit-maint-costo-${id}`).value) || 0;
-  store[idx].intervento = document.getElementById(`edit-maint-desc-${id}`).value;
-  sv(KEYS.maint, store);
-  showToast('✓ Intervento officina aggiornato.');
-  renderAutoSezione();
-}
-
-function abilitaEdizioneStoricoScadenza(id) {
-  const container = document.getElementById(`stscad-item-${id}`);
-  if(!container) return;
-  let store = ld(KEYS.storicoScadenze);
-  const s = store.find(item => item.id === id);
-  if(!s) return;
-  container.classList.add('editing-mode');
-  container.innerHTML = `
-    <div class="edit-grid">
-      <div class="field"><label>Data Pagamento</label><input type="date" id="edit-stscad-datapag-${id}" value="${s.dataPagamento}"></div>
-      <div class="field"><label>Tassa / Servizio</label>
-        <select id="edit-stscad-tipo-${id}">
-          <option value="bollo" ${s.tipo==='bollo'?'selected':''}>Bollo Auto 🎫</option>
-          <option value="assicurazione" ${s.tipo==='assicurazione'?'selected':''}>Assicurazione 🛡️</option>
-          <option value="revisione" ${s.tipo==='revisione'?'selected':''}>Revisione Statale ⏱️</option>
-        </select>
-      </div>
-      <div class="field"><label>Data Scadenza Registrata</label><input type="date" id="edit-stscad-datascad-${id}" value="${s.dataScadenza}"></div>
-      <div class="field"><label>Importo (€)</label><input type="number" step="0.01" id="edit-stscad-costo-${id}" value="${s.costo}"></div>
-    </div>
-    <div class="btn-group-sm" style="align-self: flex-end;">
-      <button class="btn-sm save" onclick="salvaEdizioneStoricoScadenza(${id})">Salva</button>
-      <button class="btn-sm" onclick="renderAutoSezione()">Annulla</button>
-    </div>
-  `;
-}
-
-function salvaEdizioneStoricoScadenza(id) {
-  let store = ld(KEYS.storicoScadenze);
-  const idx = store.findIndex(item => item.id === id);
-  if(idx === -1) return;
-  store[idx].dataPagamento = document.getElementById(`edit-stscad-datapag-${id}`).value;
-  store[idx].tipo = document.getElementById(`edit-stscad-tipo-${id}`).value;
-  store[idx].dataScadenza = document.getElementById(`edit-stscad-datascad-${id}`).value;
-  store[idx].costo = parseFloat(document.getElementById(`edit-stscad-costo-${id}`).value) || 0;
-  sv(KEYS.storicoScadenze, store);
-  showToast('✓ Voce storico aggiornata.');
-  renderAutoSezione();
-}
-
-function eliminaStoricoScadenza(id) {
-  if(confirm("Rimuovere definitivamente questa registrazione dallo storico tasse?")) {
-    sv(KEYS.storicoScadenze, ld(KEYS.storicoScadenze).filter(s => s.id !== id));
-    renderAutoSezione();
-  }
-}
-
-function abilitaEdizioneAssetVal(id) {
-  const container = document.getElementById(`assetval-item-${id}`);
-  if(!container) return;
-  let store = ld(KEYS.assetVal);
-  const v = store.find(item => item.id === id);
-  if(!v) return;
-  container.classList.add('editing-mode');
-  container.innerHTML = `
-    <div class="edit-grid">
-      <div class="field"><label>Data Rilevazione</label><input type="date" id="edit-aval-data-${id}" value="${v.data}"></div>
-      <div class="field"><label>Valore Attuale (€)</label><input type="number" step="0.01" id="edit-aval-val-${id}" value="${v.valore}"></div>
-    </div>
-    <div class="btn-group-sm" style="align-self: flex-end;">
-      <button class="btn-sm save" onclick="salvaEdizioneAssetVal(${id})">Salva</button>
-      <button class="btn-sm" onclick="renderInvestimenti()">Annulla</button>
-    </div>
-  `;
-}
-
-function salvaEdizioneAssetVal(id) {
-  let store = ld(KEYS.assetVal);
-  const idx = store.findIndex(item => item.id === id);
-  if(idx === -1) return;
-  store[idx].data = document.getElementById(`edit-aval-data-${id}`).value;
-  store[idx].valore = parseFloat(document.getElementById(`edit-aval-val-${id}`).value) || 0;
-  sv(KEYS.assetVal, store);
-  showToast('✓ Valutazione aggiornata.');
-  renderInvestimenti();
-}
-
-function eliminaValutazioneAsset(id) {
-  if(confirm("Rimuovere questa valutazione asset?")) {
-    sv(KEYS.assetVal, ld(KEYS.assetVal).filter(v => v.id !== id));
-    renderInvestimenti();
-  }
-}
-
-function abilitaEdizioneRicorrente(id) {
-  const container = document.getElementById(`rec-item-${id}`);
-  if(!container) return;
-  let store = ld(KEYS.recurConfig);
-  const r = store.find(item => item.id === id);
-  if(!r) return;
-  container.classList.add('editing-mode');
-  container.innerHTML = `
-    <div class="edit-grid">
-      <div class="field"><label>Nome Automazione</label><input type="text" id="edit-rec-desc-${id}" value="${r.descrizione}"></div>
-      <div class="field"><label>Importo (€)</label><input type="number" step="0.01" id="edit-rec-imp-${id}" value="${r.importo}"></div>
-      <div class="field"><label>Prossimo Rilascio</label><input type="date" id="edit-rec-data-${id}" value="${r.dataProssimo}"></div>
-      <div class="field"><label>Frequenza</label>
-        <select id="edit-rec-freq-${id}">
-          <option value="settimanale" ${r.frequenza==='settimanale'?'selected':''}>Ogni Settimana</option>
-          <option value="2settimane" ${r.frequenza==='2settimane'?'selected':''}>Ogni 2 Settimane</option>
-          <option value="mensile" ${r.frequenza==='mensile'?'selected':''}>Ogni Mese</option>
-          <option value="2mesi" ${r.frequenza==='2mesi'?'selected':''}>Ogni 2 Mesi</option>
-          <option value="annuale" ${r.frequenza==='annuale'?'selected':''}>Ogni Anno</option>
-        </select>
-      </div>
-    </div>
-    <div class="btn-group-sm" style="align-self: flex-end;">
-      <button class="btn-sm save" onclick="salvaEdizioneRicorrente(${id})">Salva</button>
-      <button class="btn-sm" onclick="renderRicorrenti()">Annulla</button>
-    </div>
-  `;
-}
-
-function salvaEdizioneRicorrente(id) {
-  let store = ld(KEYS.recurConfig);
-  const idx = store.findIndex(item => item.id === id);
-  if(idx === -1) return;
-  store[idx].descrizione = document.getElementById(`edit-rec-desc-${id}`).value;
-  store[idx].importo = parseFloat(document.getElementById(`edit-rec-imp-${id}`).value) || 0;
-  store[idx].dataProssimo = document.getElementById(`edit-rec-data-${id}`).value;
-  store[idx].frequenza = document.getElementById(`edit-rec-freq-${id}`).value;
-  sv(KEYS.recurConfig, store);
-  showToast('✓ Configurazione ricorrenza modificata.');
-  renderRicorrenti();
-}
-
-function inserisciCarburante() {
-  const data = document.getElementById('cData').value;
-  const contoAddebito = document.getElementById('cContoAddebito').value;
-  const km = parseInt(document.getElementById('cKm').value);
-  const litri = parseFloat(document.getElementById('cLitri').value);
-  const spesa = parseFloat(document.getElementById('cSpesa').value);
-  if(!data || isNaN(km) || isNaN(litri) || isNaN(spesa)) return;
-
-  let storeFuel = ld(KEYS.fuel);
-  storeFuel.push({ id: Date.now(), data, km, litri, spesa });
-  sv(KEYS.fuel, storeFuel);
-
-  let storeCash = ld(KEYS.cash);
-  storeCash.push({
-    id: Date.now() + 1, data, tipo: 'uscita', importo: spesa, contoOrigine: contoAddebito, contoDestinazione: '',
-    categoria: 'Auto', sottocategoria: 'Carburante', descrizione: `Rifornimento ${litri}L a ${km} KM`
-  });
-  sv(KEYS.cash, storeCash);
-  showToast('⛽ Rifornimento salvato.');
-  renderAutoSezione();
-}
-
-function inserisciManutenzione() {
-  const data = document.getElementById('mData').value;
-  const contoAddebito = document.getElementById('mContoAddebito').value;
-  const km = parseInt(document.getElementById('mKm').value);
-  const tipo = document.getElementById('mTipo').value;
-  const costo = parseFloat(document.getElementById('mCosto').value);
-  const desc = document.getElementById('mDesc').value;
-  if(!data || isNaN(km) || isNaN(costo)) return;
-
-  let storeMaint = ld(KEYS.maint);
-  storeMaint.push({ id: Date.now(), data, km, tipo, costo, intervento: desc });
-  sv(KEYS.maint, storeMaint);
-
-  let storeCash = ld(KEYS.cash);
-  storeCash.push({
-    id: Date.now() + 2, data, tipo: 'uscita', importo: costo, contoOrigine: contoAddebito, contoDestinazione: '',
-    categoria: 'Auto', sottocategoria: 'Manutenzione', descrizione: `Officina (${tipo}): ${desc}`
-  });
-  sv(KEYS.cash, storeCash);
-  showToast('🔧 Officina salvata.');
-  renderAutoSezione();
-}
-
-function eliminaCarburante(id) { sv(KEYS.fuel, ld(KEYS.fuel).filter(c => c.id !== id)); renderAutoSezione(); }
-function eliminaManutenzione(id) { sv(KEYS.maint, ld(KEYS.maint).filter(m => m.id !== id)); renderAutoSezione(); }
-
-function salvaScadenzaConSpesa() {
-  const tipo = document.getElementById('scTipoTassa').value;
-  const pagData = document.getElementById('scDataPagamento').value || today();
-  const scadenza = document.getElementById('scDataScadenza').value;
-  const costo = parseFloat(document.getElementById('scCosto').value) || 0;
-  const contoAddebito = document.getElementById('scContoAddebito').value;
-  if(!scadenza) { showToast('⚠ Inserisci la data di scadenza.'); return; }
-
-  let dbScadenze = ldObj(KEYS.scadenze);
-  dbScadenze[tipo] = { scadenza: scadenza, costo: costo };
-  sv(KEYS.scadenze, dbScadenze);
-
-  let storicoSc = ld(KEYS.storicoScadenze);
-  storicoSc.push({ id: Date.now(), dataPagamento: pagData, tipo, dataScadenza: scadenza, costo });
-  sv(KEYS.storicoScadenze, storicoSc);
-
-  if(costo > 0) {
-    let storeCash = ld(KEYS.cash);
-    const nomiEtichette = { bollo: 'Bollo Auto', assicurazione: 'Assicurazione', revisione: 'Revisione' };
-    storeCash.push({
-      id: Date.now() + 3, data: pagData, tipo: 'uscita', importo: costo, contoOrigine: contoAddebito, contoDestinazione: '',
-      categoria: 'Auto', sottocategoria: nomiEtichette[tipo], descrizione: `Pagamento rinnovato scadenza ${fmtDate(scadenza)}`
+function setupDropZone(id, handler) {
+    var zone = $(id); if (!zone) return;
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        zone.addEventListener(eventName, function(e) { e.preventDefault(); e.stopPropagation(); }, false);
     });
-    sv(KEYS.cash, storeCash);
-    showToast(`✓ Scadenza aggiornata e spesa registrata.`);
-  } else {
-    showToast('✓ Scadenza aggiornata.');
-  }
-  document.getElementById('scCosto').value = '';
-  renderAutoSezione();
+    ['dragenter', 'dragover'].forEach(eventName => {
+        zone.addEventListener(eventName, function() { zone.classList.add('dov'); }, false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+        zone.addEventListener(eventName, function() { zone.classList.remove('dov'); }, false);
+    });
+    zone.addEventListener('drop', function(e) {
+        var files = e.dataTransfer.files;
+        if (files.length > 0) handler(files[0]);
+    }, false);
 }
 
-function calcolaBadgeScadenza(dataIso) {
-  if(!dataIso) return { testo: 'Mancante', classe: 'badge-alert' };
-  const oggi = new Date(today()); const scad = new Date(dataIso);
-  const diffTempo = scad - oggi; const diffGiorni = Math.ceil(diffTempo / (1000 * 60 * 60 * 24));
-  if(diffGiorni < 0) return { testo: `Scaduto da ${Math.abs(diffGiorni)} gg`, classe: 'badge-alert' };
-  else if(diffGiorni <= 30) return { testo: `In scadenza (${diffGiorni} gg)`, classe: 'badge-warn' };
-  else return { testo: `Ok (${diffGiorni} gg)`, classe: 'badge-ok' };
-}
+setupDropZone('dZ', handleContoFile);
+setupDropZone('pDZ', handlePortFile);
 
-function renderAutoSezione() {
-  const carbu = ld(KEYS.fuel).sort((a,b) => new Date(b.data) - new Date(a.data));
-  const containerC = document.getElementById('listaCarburante');
-  if(containerC) {
-    containerC.innerHTML = carbu.length ? carbu.map((c, idx) => {
-      let consumoInfo = "Calcolo dal prossimo pieno";
-      if (idx < carbu.length - 1) {
-        const prec = carbu[idx + 1]; const kmdiff = c.km - prec.km;
-        if(kmdiff > 0 && c.litri > 0) consumoInfo = `Consumo: ${(kmdiff / c.litri).toFixed(2)} km/L`;
-      }
-      return `<div class="history-item" id="fuel-item-${c.id}"><div><div class="history-date">€${c.spesa.toFixed(2)} — ${c.litri.toFixed(2)}L</div><div class="history-sub2">${fmtDate(c.data)} | ${c.km} KM | ${consumoInfo}</div></div><div class="btn-group-sm"><button class="btn-sm edit" onclick="abilitaEdizioneCarburante(${c.id})">✏️ Modifica</button><button class="btn-sm del" onclick="eliminaCarburante(${c.id})">✕</button></div></div>`;
-    }).join('') : '<div style="color:var(--muted); font-size:0.8rem; padding:10px;">Nessun rifornimento registrato.</div>';
-  }
+ $('sI').addEventListener('input', function(e){ CS.st = e.target.value; applyFilters(); });
+ $('fC').addEventListener('change', function(){ applyFilters(); });
+ $('bDR').addEventListener('click', function(){ if(CS.sel) delCRow(CS.sel.row); });
+ $('bEX').addEventListener('click', function(){ doCExport(); });
+ $('logoBtn').addEventListener('click', function(){ goHome(); });
 
-  const officina = ld(KEYS.maint).sort((a,b) => new Date(b.data) - new Date(a.data));
-  const containerM = document.getElementById('listaManutenzioni');
-  if(containerM) {
-    containerM.innerHTML = officina.length ? officina.map(m => `<div class="history-item" id="maint-item-${m.id}"><div><div class="history-date">€${m.costo.toFixed(2)} — ${m.tipo}</div><div class="history-sub2">${fmtDate(m.data)} | ${m.km} KM | ${m.intervento||'—'}</div></div><div class="btn-group-sm"><button class="btn-sm edit" onclick="abilitaEdizioneManutenzione(${m.id})">✏️ Modifica</button><button class="btn-sm del" onclick="eliminaManutenzione(${m.id})">✕</button></div></div>`).join('') : '<div style="color:var(--muted); font-size:0.8rem; padding:10px;">Nessun intervento registrato.</div>';
-  }
-
-  const sc = ldObj(KEYS.scadenze);
-  const dataBollo = sc.bollo ? sc.bollo.scadenza : ''; const costoBollo = sc.bollo ? sc.bollo.costo : 0;
-  const dataAss = sc.assicurazione ? sc.assicurazione.scadenza : ''; const costoAss = sc.assicurazione ? sc.assicurazione.costo : 0;
-  const dataRev = sc.revisione ? sc.revisione.scadenza : ''; const costoRev = sc.revisione ? sc.revisione.costo : 0;
-  const badgeBollo = calcolaBadgeScadenza(dataBollo); const badgeAss = calcolaBadgeScadenza(dataAss); const badgeRev = calcolaBadgeScadenza(dataRev);
-
-  const containerScatole = document.getElementById('scadenzeStatoScatole');
-  if(containerScatole) {
-    containerScatole.innerHTML = `
-      <div class="scadenza-box" id="box-stato-bollo"><div class="scadenza-header"><span>🎫 Bollo Auto</span><span style="display:flex; align-items:center; gap:8px;"><button class="btn-sm edit" style="padding: 2px 6px; font-size:0.65rem;" onclick="abilitaEdizioneStatoCorrente('bollo')">✏️ Modifica</button><span class="scadenza-badge ${badgeBollo.classe}">${badgeBollo.testo}</span></span></div><div class="scadenza-meta"><span>Scadenza: <strong>${fmtDate(dataBollo)}</strong></span><span>Ultimo Costo: <strong>€ ${costoBollo.toFixed(2)}</strong></span></div></div>
-      <div class="scadenza-box" id="box-stato-assicurazione"><div class="scadenza-header"><span>🛡️ Assicurazione</span><span style="display:flex; align-items:center; gap:8px;"><button class="btn-sm edit" style="padding: 2px 6px; font-size:0.65rem;" onclick="abilitaEdizioneStatoCorrente('assicurazione')">✏️ Modifica</button><span class="scadenza-badge ${badgeAss.classe}">${badgeAss.testo}</span></span></div><div class="scadenza-meta"><span>Scadenza: <strong>${fmtDate(dataAss)}</strong></span><span>Ultimo Costo: <strong>€ ${costoAss.toFixed(2)}</strong></span></div></div>
-      <div class="scadenza-box" id="box-stato-revisione"><div class="scadenza-header"><span>⏱️ Revisione Statale</span><span style="display:flex; align-items:center; gap:8px;"><button class="btn-sm edit" style="padding: 2px 6px; font-size:0.65rem;" onclick="abilitaEdizioneStatoCorrente('revisione')">✏️ Modifica</button><span class="scadenza-badge ${badgeRev.classe}">${badgeRev.testo}</span></span></div><div class="scadenza-meta"><span>Scadenza: <strong>${fmtDate(dataRev)}</strong></span><span>Ultimo Costo: <strong>€ ${costoRev.toFixed(2)}</strong></span></div></div>
-    `;
-  }
-
-  const storScadenze = ld(KEYS.storicoScadenze);
-  const tipiTassa = ['bollo', 'assicurazione', 'revisione'];
-  const nomiMappe = { bollo: 'Bollo Auto 🎫', assicurazione: 'Assicurazione 🛡️', revisione: 'Revisione Statale ⏱️' };
-  
-  tipiTassa.forEach(tipo => {
-    const recordFiltrati = storScadenze.filter(s => s.tipo === tipo).sort((a,b) => new Date(b.dataPagamento) - new Date(a.dataPagamento));
-    document.getElementById(`count-${tipo}`).textContent = recordFiltrati.length;
-    const targetLista = document.getElementById(`listaStorico-${tipo}`);
-    if(targetLista) {
-      targetLista.innerHTML = recordFiltrati.length ? recordFiltrati.map(s => `<div class="history-item" id="stscad-item-${s.id}"><div><div class="history-date">€${s.costo.toFixed(2)} — ${nomiMappe[s.tipo]}</div><div class="history-sub2">Pagato il: ${fmtDate(s.dataPagamento)} | Scadenza: ${fmtDate(s.dataScadenza)}</div></div><div class="btn-group-sm"><button class="btn-sm edit" onclick="abilitaEdizioneStoricoScadenza(${s.id})">✏️ Modifica</button><button class="btn-sm del" onclick="eliminaStoricoScadenza(${s.id})">✕</button></div></div>`).join('') : `<div style="color:var(--muted); font-size:0.8rem; padding:6px;">Nessun record salvato in questa sezione.</div>`;
-    }
-  });
-}
-
-function aggiungiAutomazione() {
-  const dataProssimo = document.getElementById('rDataInizio').value; const tipo = document.getElementById('rTipo').value;
-  const importo = parseFloat(document.getElementById('rImporto').value); const contoOrigine = document.getElementById('rContoOrigine').value;
-  const contoDestinazione = document.getElementById('rContoDestinazione').value; const frequenza = document.getElementById('rFreq').value;
-  const descrizione = document.getElementById('rDesc').value;
-  if(!dataProssimo || isNaN(importo) || !descrizione) return;
-
-  let config = ld(KEYS.recurConfig);
-  config.push({ id: Date.now(), dataProssimo, tipo, importo, contoOrigine, contoDestinazione, frequenza, descrizione });
-  sv(KEYS.recurConfig, config);
-  showToast('🔄 Ricorrenza attivata.');
-  renderRicorrenti();
-}
-
-function eliminaAutomazione(id) {
-  if(confirm("Eliminare questa automazione?")) {
-    sv(KEYS.recurConfig, ld(KEYS.recurConfig).filter(r => r.id !== id));
-    renderRicorrenti();
-  }
-}
-
-function eseguiAutomazioniRicorrenti() {
-  let config = ld(KEYS.recurConfig); let movimenti = ld(KEYS.cash);
-  let oggiString = new Date().toISOString().slice(0,10); let modificato = false;
-
-  config.forEach(r => {
-    let loopGuard = 0; if(!r.frequenza) r.frequenza = 'mensile';
-    while(r.dataProssimo && r.dataProssimo <= oggiString && loopGuard < 50) {
-      movimenti.push({
-        id: Date.now() + Math.random(), data: r.dataProssimo, tipo: r.tipo, importo: r.importo,
-        contoOrigine: r.contoOrigine, contoDestinazione: r.contoDestinazione, categoria: 'Automazione', sottocategoria: 'Ricorrente', descrizione: `[Auto] ${r.descrizione}`
-      });
-      let parts = r.dataProssimo.split('-');
-      let dateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-      if (r.frequenza === 'settimanale') dateObj.setDate(dateObj.getDate() + 7);
-      else if (r.frequenza === '2settimane') dateObj.setDate(dateObj.getDate() + 14);
-      else if (r.frequenza === 'mensile') dateObj.setMonth(dateObj.getMonth() + 1);
-      else if (r.frequenza === '2mesi') dateObj.setMonth(dateObj.getMonth() + 2);
-      else if (r.frequenza === 'annuale') dateObj.setFullYear(dateObj.getFullYear() + 1);
-      r.dataProssimo = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
-      modificato = true; loopGuard++;
-    }
-  });
-  if(modificato) { sv(KEYS.cash, movimenti); sv(KEYS.recurConfig, config); }
-}
-
-function aggiornaValoreAsset() {
-  const data = document.getElementById('vData').value; const asset = document.getElementById('vAsset').value;
-  const valore = parseFloat(document.getElementById('vValore').value);
-  if(!data || isNaN(valore)) return;
-  let store = ld(KEYS.assetVal); store.push({ id: Date.now(), data, asset, valore });
-  sv(KEYS.assetVal, store);
-  showToast('📈 Asset aggiornato.');
-  renderInvestimenti();
-}
-
-function renderDashboard() {
-  const tuttiMovimenti = ld(KEYS.cash); const fuel = ld(KEYS.fuel); const maint = ld(KEYS.maint); const valutazioni = ld(KEYS.assetVal);
-  const contiDisponibili = getContiAttuali(); const assetsDisponibili = getAssetsAttuali();
-  const dataDalFiltro = document.getElementById('dashDataDal').value || '1970-01-01';
-  const dataAlFiltro = document.getElementById('dashDataAl').value || '2099-12-31';
-
-  const movimentiFiltratiPeriodo = tuttiMovimenti.filter(m => m.data >= dataDalFiltro && m.data <= dataAlFiltro);
-  let totalEntrate = 0; let totalUscite = 0;
-  let saldi = {}; contiDisponibili.forEach(c => { saldi[c] = 0; });
-
-  tuttiMovimenti.forEach(m => {
-    if (m.data <= dataAlFiltro) {
-      if(m.tipo === 'entrata' && saldi[m.contoOrigine] !== undefined) saldi[m.contoOrigine] += m.importo;
-      if(m.tipo === 'uscita' && saldi[m.contoOrigine] !== undefined) saldi[m.contoOrigine] -= m.importo;
-      if(m.tipo === 'giroconto') {
-        if(saldi[m.contoOrigine] !== undefined) saldi[m.contoOrigine] -= m.importo;
-        if(saldi[m.contoDestinazione] !== undefined) saldi[m.contoDestinazione] += m.importo;
-      }
-    }
-  });
-
-  movimentiFiltratiPeriodo.forEach(m => {
-    if(m.tipo === 'entrata') totalEntrate += m.importo;
-    if(m.tipo === 'uscita') totalUscite += m.importo;
-  });
-
-  let assetVersati = {}; assetsDisponibili.forEach(a => { assetVersati[a] = 0; });
-  tuttiMovimenti.forEach(m => {
-    if (m.data <= dataAlFiltro && m.tipo === 'giroconto') {
-      assetsDisponibili.forEach(a => { if(m.contoDestinazione && m.contoDestinazione.includes(a)) assetVersati[a] += m.importo; });
-    }
-  });
-
-  let totalInvestito = 0;
-  assetsDisponibili.forEach(a => {
-    let filtrati = valutazioni.filter(v => v.asset === a && v.data <= dataAlFiltro).sort((a,b)=>new Date(b.data)-new Date(a.data));
-    totalInvestito += filtrati.length ? filtrati[0].valore : (assetVersati[a] || 0);
-  });
-
-  let liquiditaTotale = 0; let stringaHtmlConti = '';
-  const schemaColori = { "Intesa Sanpaolo": "var(--blue)", "Revolut": "var(--orange)", "Conto Emergenza (Revolut)": "var(--purple)" };
-
-  contiDisponibili.forEach(c => {
-    const s = saldi[c] || 0; liquiditaTotale += s;
-    stringaHtmlConti += `<div class="stat-card" style="border-left: 4px solid ${schemaColori[c]||'var(--muted)'};"><div class="stat-label">🏛️ Saldo ${c}</div><div class="stat-value">€ ${s.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div></div>`;
-  });
-
-  const dbMainStats = document.getElementById('dashboardMainStats');
-  if(dbMainStats) {
-    dbMainStats.innerHTML = `
-      <div class="stat-card" style="border-left: 4px solid var(--accent);"><div class="stat-label">🟢 Entrate Periodo</div><div class="stat-value" style="color:var(--accent)">€ ${totalEntrate.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div></div>
-      <div class="stat-card" style="border-left: 4px solid var(--red);"><div class="stat-label">🔴 Uscite Periodo</div><div class="stat-value" style="color:var(--red)">€ ${totalUscite.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div></div>
-      <div class="stat-card" style="border-left: 4px solid var(--purple);"><div class="stat-label">📈 Investito (al ${fmtDate(dataAlFiltro)})</div><div class="stat-value" style="color:var(--purple)">€ ${totalInvestito.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div></div>
-      ${stringaHtmlConti}
-      <div class="stat-card total-card"><div class="stat-label" style="color:var(--accent); font-weight:800;">💰 Patrimonio Stimato</div><div class="stat-value" style="color:var(--accent)">€ ${(liquiditaTotale + totalInvestito).toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div></div>
-    `;
-  }
-
-  let fuelPeriodo = fuel.filter(f => f.data >= dataDalFiltro && f.data <= dataAlFiltro);
-  let maintPeriodo = maint.filter(m => m.data >= dataDalFiltro && m.data <= dataAlFiltro);
-  let maxKm = fuel.length ? Math.max(...fuel.map(f=>f.km)) : (maint.length ? Math.max(...maint.map(m=>m.km)) : 0);
-  
-  const autoStats = document.getElementById('autoDashboardStats');
-  if(autoStats) {
-    autoStats.innerHTML = `
-      <div class="stat-card" style="border-left: 4px solid var(--muted);"><div class="stat-label">Spesa nel Periodo</div><div class="stat-value">€ ${(fuelPeriodo.reduce((a,b)=>a+b.spesa,0) + maintPeriodo.reduce((a,b)=>a+b.costo,0)).toFixed(2)}</div></div>
-      <div class="stat-card" style="border-left: 4px solid var(--muted);"><div class="stat-label">Chilometraggio</div><div class="stat-value">${maxKm || '—'} KM</div></div>
-    `;
-  }
-
-  const ctx1 = document.getElementById('chCashflow');
-  if(ctx1) {
-    if(window.hChart1) window.hChart1.destroy();
-    window.hChart1 = new Chart(ctx1, { type: 'bar', data: { labels: ['Entrate', 'Uscite'], datasets: [{ data: [totalEntrate, totalUscite], backgroundColor: ['#47ffaa', '#ff6b6b'], borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
-  }
-  const ctx2 = document.getElementById('chContiDashboard');
-  if(ctx2) {
-    if(window.hChart2) window.hChart2.destroy();
-    window.hChart2 = new Chart(ctx2, { type: 'doughnut', data: { labels: contiDisponibili, datasets: [{ data: contiDisponibili.map(c => saldi[c] || 0), backgroundColor: contiDisponibili.map((c, i) => schemaColori[c] || ['#47c8ff', '#ffaa47', '#b09eff'][i % 3]), borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#fff', font: { size: 9 } } } } } });
-  }
-  const ctx3 = document.getElementById('chInvestimentiDashboard');
-  if(ctx3) {
-    if(window.hChart3) window.hChart3.destroy();
-    let storiciOrdinati = [...valutazioni].sort((a,b) => new Date(a.data) - new Date(b.data));
-    let puntiData = {}; storiciOrdinati.forEach(v => { if(assetsDisponibili.includes(v.asset)) puntiData[v.data] = (puntiData[v.data] || 0) + v.valore; });
-    let labelsDate = Object.keys(puntiData).map(d => fmtDate(d)); let valoriDate = Object.values(puntiData);
-    window.hChart3 = new Chart(ctx3, { type: 'line', data: { labels: labelsDate.length?labelsDate:['Nessun dato'], datasets: [{ label: 'Valore Portafoglio', data: valoriDate.length?valoriDate:[0], borderColor: '#b09eff', backgroundColor: 'rgba(176, 158, 255, 0.1)', fill: true, tension: 0.2, borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false }, ticks: { color: '#6b7080', font: { size: 8 } } }, y: { grid: { color: '#2a2d3a' }, ticks: { color: '#6b7080', font: { size: 8 } } } }, plugins: { legend: { display: false } } } });
-  }
-}
-
-function renderInvestimenti() {
-  const mov = ld(KEYS.cash); const valutazioni = ld(KEYS.assetVal); const assets = getAssetsAttuali();
-  let versati = {}; assets.forEach(a => { versati[a] = 0; });
-  mov.forEach(m => {
-    if(m.tipo === 'giroconto') { assets.forEach(a => { if(m.contoDestinazione && m.contoDestinazione.includes(a)) versati[a] += m.importo; }); }
-  });
-  let attuali = {};
-  assets.forEach(a => {
-    let filtrati = valutazioni.filter(v => v.asset === a).sort((a,b)=>new Date(b.data)-new Date(a.data));
-    attuali[a] = filtrati.length ? filtrati[0].valore : (versati[a] || 0);
-  });
-  const tabInv = document.getElementById('investimentiTabella');
-  if(tabInv) {
-    tabInv.innerHTML = assets.map(a => {
-      let vTotal = versati[a] || 0; let aTotal = attuali[a] || 0; let gain = aTotal - vTotal;
-      return `<tr><td><strong>${a}</strong></td><td>€${vTotal.toFixed(2)}</td><td>€${aTotal.toFixed(2)}</td><td style="color:${gain>=0?'var(--accent)':'var(--red)'}">€${gain.toFixed(2)}</td><td style="color:${gain>=0?'var(--accent)':'var(--red)'}">${(vTotal>0?(gain/vTotal*100):0).toFixed(1)}%</td></tr>`;
-    }).join('');
-  }
-  const storList = document.getElementById('storicoAssetLista');
-  if(storList) {
-    storList.innerHTML = valutazioni.filter(v => assets.includes(v.asset)).sort((a,b)=>new Date(b.data)-new Date(a.data)).map(v => `<div class="history-item" id="assetval-item-${v.id}"><div><div class="history-date">${v.asset}: €${v.valore.toFixed(2)}</div><div class="history-sub2">Rilevato il ${fmtDate(v.data)}</div></div><div class="btn-group-sm"><button class="btn-sm edit" onclick="abilitaEdizioneAssetVal(${v.id})">✏️ Modifica</button><button class="btn-sm del" onclick="eliminaValutazioneAsset(${v.id})">✕</button></div></div>`).join('');
-  }
-  const ctx = document.getElementById('chAllocazione');
-  if(ctx) {
-    if(window.hChartAlloc) window.hChartAlloc.destroy();
-    window.hChartAlloc = new Chart(ctx, { type:'doughnut', data: { labels: assets, datasets: [{ data: assets.map(a => attuali[a]), backgroundColor: ['#47c8ff','#b09eff','#ffaa47','#47ffaa','#ff6b6b'], borderWidth:0 }] }, options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right',labels:{color:'#fff',font:{size:9}}}} } });
-  }
-}
-
-function renderRicorrenti() {
-  const config = ld(KEYS.recurConfig);
-  const container = document.getElementById('automazioniAttiveLista');
-  if(container) {
-    container.innerHTML = config.length ? config.map(r => {
-      const freqLabel = { 'settimanale':'Settimanale', '2settimane':'Ogni 2 Settimane', 'mensile':'Mensile', '2mesi':'Ogni 2 Mesi', 'annuale':'Annuale' }[r.frequenza || 'mensile'];
-      return `<div class="history-item" id="rec-item-${r.id}"><div><div class="history-date">${r.descrizione} — €${r.importo.toFixed(2)}</div><div class="history-sub2">Frequenza: <strong>${freqLabel}</strong> | Origine: ${r.contoOrigine} ${r.contoDestinazione?' → '+r.contoDestinazione:''} | Prossimo: ${fmtDate(r.dataProssimo)}</div></div><div class="btn-group-sm"><button class="btn-sm edit" onclick="abilitaEdizioneRicorrente(${r.id})">✏️ Modifica</button><button class="btn-sm del" onclick="eliminaAutomazione(${r.id})">✕</button></div></div>`;
-    }).join('') : '<div style="color:var(--muted); font-size:0.8rem; padding:10px;">Nessun automatismo ricorrente attivo.</div>';
-  }
-}
-
-function renderRegistro() {
-  const mov = ld(KEYS.cash).sort((a,b) => new Date(b.data) - new Date(a.data));
-  const container = document.getElementById('registroLista');
-  if(container) {
-    container.innerHTML = mov.length ? mov.map(m => `<div class="history-item" id="mov-item-${m.id}"><div><div class="history-date" style="color:${m.tipo==='entrata'?'var(--accent)':m.tipo==='uscita'?'#fff':'var(--blue)'}">${m.tipo==='entrata'?'🟢':m.tipo==='uscita'?'🔴':'🔄'} €${m.importo.toFixed(2)}</div><div class="history-sub2">Conto: ${m.contoOrigine} ${m.contoDestinazione?' → '+m.contoDestinazione:''}<br>Cat: ${m.categoria||'Giroconto'} ${m.sottocategoria?`(`+m.sottocategoria+`)`:''} | Data: ${fmtDate(m.data)} | Note: ${m.descrizione||'—'}</div></div><div class="btn-group-sm"><button class="btn-sm edit" onclick="abilitaEdizioneMovimento(${m.id})">✏️ Modifica</button><button class="btn-sm del" onclick="eliminaMovimento(${m.id})">✕</button></div></div>`).join('') : '<div style="color:var(--muted); font-size:0.8rem; padding:10px;">Nessuna transazione presente.</div>';
-  }
-}
+document.querySelectorAll('#pTabs .tab-b').forEach(btn => {
+    btn.addEventListener('click', function() { switchPTab(this.getAttribute('data-t')); });
+});
+ $('movSearch').addEventListener('input', function() { renderPMovTable(); });
+ $('movType').addEventListener('change', function() { renderPMovTable(); });
 </script>
 </body>
 </html>
