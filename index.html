@@ -1,9 +1,9 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Excel Studio - Gestione Finanziaria Completa</title>
+    <title>Excel Studio - Gestione Finanziaria</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -20,65 +20,22 @@
             --warning: #ffd740;
             --info: #4fc3f7;
         }
-        
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-        }
-        
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        
         .header {
-            background: rgba(10, 14, 10, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            padding: 15px 30px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
+            background: rgba(10,14,10,0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); padding: 15px 30px;
+            position: sticky; top: 0; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
         }
-        
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-        
-        .kpi-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            transition: all 0.3s;
-        }
-        
-        .kpi-card:hover {
-            border-color: #2a4e2a;
-            transform: translateY(-2px);
-        }
-        
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+        .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: all 0.3s; }
+        .kpi-card:hover { border-color: #2a4e2a; transform: translateY(-2px); }
         .btn {
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-            font-size: 14px;
-            white-space: nowrap;
+            padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
+            border: none; transition: all 0.2s; font-size: 14px; white-space: nowrap;
         }
-        
         .btn-primary { background: var(--accent); color: #000; }
         .btn-primary:hover { background: #00e676; }
         .btn-secondary { background: var(--border); color: var(--text); border: 1px solid #2a4e2a; }
@@ -87,137 +44,44 @@
         .btn-info:hover { background: #2a4e5e; }
         .btn-warning { background: #3e3a1a; color: var(--warning); border: 1px solid #5e5a2a; }
         .btn-warning:hover { background: #5e5a2a; }
-        .btn-danger { background: #3e1a1a; color: var(--danger); border: 1px solid #4e2a2a; }
-        .btn-danger:hover { background: #4e2a2a; }
-        
         .btn-sm { padding: 6px 12px; font-size: 12px; }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-        
-        th {
-            background: var(--border);
-            color: var(--accent);
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        
-        td {
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        tr:hover td { background: rgba(0, 200, 83, 0.05); }
-        
-        .text-success { color: var(--accent); }
-        .text-danger { color: var(--danger); }
-        .text-warning { color: var(--warning); }
-        .text-info { color: var(--info); }
-        
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: var(--border); color: var(--accent); padding: 12px; text-align: left; font-weight: 600; position: sticky; top: 0; z-index: 10; }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+        tr:hover td { background: rgba(0,200,83,0.05); }
+        .text-success { color: var(--accent); font-weight: 600; }
+        .text-danger { color: var(--danger); font-weight: 600; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
         .badge-success { background: rgba(0,200,83,0.2); color: var(--accent); }
         .badge-danger { background: rgba(255,82,82,0.2); color: var(--danger); }
-        .badge-warning { background: rgba(255,215,64,0.2); color: var(--warning); }
         .badge-info { background: rgba(79,195,247,0.2); color: var(--info); }
-        
+        .badge-warning { background: rgba(255,215,64,0.2); color: var(--warning); }
         .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-        
         .hidden { display: none !important; }
-        
         input, select, textarea {
-            background: #0a0e0a;
-            border: 1px solid #2a4e2a;
-            border-radius: 8px;
-            padding: 10px;
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            width: 100%;
+            background: #0a0e0a; border: 1px solid #2a4e2a; border-radius: 8px;
+            padding: 10px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; width: 100%;
         }
-        
-        input:focus, select:focus {
-            border-color: var(--accent);
-            outline: none;
-        }
-        
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin: 20px 0;
-        }
-        
-        .saving-tip {
-            background: #1a2e1a;
-            border-left: 4px solid var(--accent);
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 0 8px 8px 0;
-        }
-        
+        input:focus, select:focus { border-color: var(--accent); outline: none; }
+        .chart-container { position: relative; height: 300px; margin: 20px 0; }
+        .saving-tip { background: #1a2e1a; border-left: 4px solid var(--accent); padding: 15px; margin: 10px 0; border-radius: 0 8px 8px 0; }
         .saving-tip.warning { border-left-color: var(--warning); background: #2e2a1a; }
         .saving-tip.danger { border-left-color: var(--danger); background: #2e1a1a; }
-        
-        .nav-tabs {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .nav-tab {
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            background: var(--card);
-            border: 1px solid var(--border);
-            color: var(--muted);
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-        
+        .nav-tabs { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
+        .nav-tab { padding: 8px 16px; border-radius: 8px; cursor: pointer; background: var(--card); border: 1px solid var(--border); color: var(--muted); font-size: 13px; transition: all 0.2s; }
         .nav-tab:hover { color: var(--text); border-color: #2a4e2a; }
         .nav-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
-        
-        .progress-bar {
-            height: 8px;
-            background: #1a2e1a;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 8px 0;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.5s ease;
-        }
-        
-        @media (max-width: 768px) {
-            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-        }
+        .progress-bar { height: 8px; background: #1a2e1a; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+        .progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+        .debug-box { background: #1a1a0a; border: 1px solid #4e4e2a; border-radius: 8px; padding: 12px; margin: 10px 0; font-family: monospace; font-size: 11px; color: #ffd740; max-height: 200px; overflow-y: auto; }
+        @media (max-width: 768px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <!-- Toast Container -->
     <div id="toastContainer" style="position:fixed;top:20px;right:20px;z-index:9999;"></div>
 
-    <!-- Header -->
     <div class="header">
         <div style="display:flex;align-items:center;gap:15px;">
             <div style="width:40px;height:40px;background:linear-gradient(135deg,#00c853,#00e676);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;" onclick="showView('home')">📊</div>
@@ -226,7 +90,7 @@
                 <p style="font-size:11px;color:var(--muted);" id="pageTitle">Dashboard Finanziaria</p>
             </div>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="navButtons">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-secondary" onclick="showView('home')">🏠 Home</button>
             <button class="btn btn-secondary" onclick="showView('conto')">💰 Conto</button>
             <button class="btn btn-info" onclick="showView('investimenti')">📈 Investimenti</button>
@@ -235,36 +99,35 @@
         </div>
     </div>
 
-    <!-- File Input Nascosti -->
     <input type="file" id="contoFileInput" accept=".xlsx,.xls,.csv" style="display:none;">
     <input type="file" id="investimentiFileInput" accept=".csv" style="display:none;">
 
     <div class="container">
-        <!-- ==================== HOME ==================== -->
+        <!-- HOME -->
         <div id="homeView">
             <div style="text-align:center;padding:60px 0;">
                 <h1 style="font-size:36px;margin-bottom:10px;">Gestisci le Tue Finanze</h1>
                 <p style="color:var(--muted);font-size:18px;margin-bottom:40px;">Analizza, investi e risparmia in modo intelligente</p>
-                
                 <div class="grid-2" style="max-width:900px;margin:0 auto;">
                     <div class="card" style="text-align:center;cursor:pointer;" onclick="showView('conto')">
                         <div style="font-size:48px;margin-bottom:15px;">🏦</div>
                         <h3>Estratto Conto</h3>
-                        <p style="color:var(--muted);">Carica il tuo file bancario</p>
+                        <p style="color:var(--muted);">Carica file Excel/CSV della banca</p>
+                        <button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="event.stopPropagation();document.getElementById('contoFileInput').click()">📂 Carica</button>
+                        <button class="btn btn-secondary btn-sm" style="margin-top:10px;" onclick="event.stopPropagation();loadContoDemo()">📊 Demo</button>
                     </div>
-                    
                     <div class="card" style="text-align:center;cursor:pointer;" onclick="showView('investimenti')">
                         <div style="font-size:48px;margin-bottom:15px;">📈</div>
                         <h3>Investimenti</h3>
-                        <p style="color:var(--muted);">Monitora portafoglio e rendimenti</p>
+                        <p style="color:var(--muted);">Portafoglio e rendimenti</p>
+                        <button class="btn btn-info btn-sm" style="margin-top:10px;" onclick="event.stopPropagation();document.getElementById('investimentiFileInput').click()">📂 CSV</button>
+                        <button class="btn btn-secondary btn-sm" style="margin-top:10px;" onclick="event.stopPropagation();loadInvestimentiDemo()">📊 Demo</button>
                     </div>
-                    
                     <div class="card" style="text-align:center;cursor:pointer;" onclick="showView('auto')">
                         <div style="font-size:48px;margin-bottom:15px;">🚗</div>
                         <h3>Spese Auto</h3>
-                        <p style="color:var(--muted);">Traccia carburante e manutenzione</p>
+                        <p style="color:var(--muted);">Carburante e manutenzione</p>
                     </div>
-                    
                     <div class="card" style="text-align:center;cursor:pointer;" onclick="showView('risparmi')">
                         <div style="font-size:48px;margin-bottom:15px;">💡</div>
                         <h3>Analisi Risparmi</h3>
@@ -274,79 +137,77 @@
             </div>
         </div>
 
-        <!-- ==================== CONTO ==================== -->
+        <!-- CONTO -->
         <div id="contoView" class="hidden">
             <div style="text-align:center;padding:40px;" id="contoUpload">
                 <h2>📂 Carica il tuo Estratto Conto</h2>
-                <p style="color:var(--muted);margin:20px 0;">Supporta file .xlsx, .xls e .csv</p>
-                <button class="btn btn-primary" onclick="document.getElementById('contoFileInput').click()">
-                    📂 Seleziona File
-                </button>
-                <button class="btn btn-secondary" onclick="loadContoDemo()" style="margin-left:10px;">
-                    📊 Carica Demo
-                </button>
+                <p style="color:var(--muted);margin:20px 0;">Supporta file .xlsx, .xls e .csv di qualsiasi banca italiana</p>
+                <button class="btn btn-primary" onclick="document.getElementById('contoFileInput').click()">📂 Seleziona File</button>
+                <button class="btn btn-secondary" onclick="loadContoDemo()" style="margin-left:10px;">📊 Carica Demo</button>
+                <p style="color:var(--warning);margin-top:20px;font-size:13px;">
+                    ⚠️ Se i saldi sono sbagliati, controlla che le colonne Data, Descrizione e Importo siano riconosciute.<br>
+                    I formati supportati: <b>-1.234,56</b>, <b>1.234,56-</b>, <b>(1.234,56)</b>, <b>1234.56</b>
+                </p>
             </div>
 
             <div id="contoData" class="hidden">
                 <!-- KPI -->
                 <div class="grid-3" style="margin-bottom:30px;">
                     <div class="kpi-card">
-                        <div style="color:var(--muted);font-size:12px;text-transform:uppercase;">💰 Saldo</div>
-                        <div style="font-size:32px;font-weight:700;color:var(--accent);" id="saldoCorrente">€0</div>
+                        <div style="color:var(--muted);font-size:12px;text-transform:uppercase;">💰 Saldo Netto</div>
+                        <div style="font-size:32px;font-weight:700;" id="saldoCorrente">€0</div>
+                        <div style="font-size:11px;color:var(--muted);margin-top:5px;" id="saldoSub"></div>
                     </div>
                     <div class="kpi-card">
-                        <div style="color:var(--muted);font-size:12px;text-transform:uppercase;">📈 Entrate</div>
+                        <div style="color:var(--muted);font-size:12px;text-transform:uppercase;">📈 Entrate Totali</div>
                         <div style="font-size:32px;font-weight:700;color:var(--accent);" id="entrateTotali">€0</div>
+                        <div style="font-size:11px;color:var(--muted);margin-top:5px;" id="entrateSub"></div>
                     </div>
                     <div class="kpi-card">
-                        <div style="color:var(--muted);font-size:12px;text-transform:uppercase;">📉 Uscite</div>
+                        <div style="color:var(--muted);font-size:12px;text-transform:uppercase;">📉 Uscite Totali</div>
                         <div style="font-size:32px;font-weight:700;color:var(--danger);" id="usciteTotali">€0</div>
+                        <div style="font-size:11px;color:var(--muted);margin-top:5px;" id="usciteSub"></div>
                     </div>
                 </div>
 
-                <!-- Grafico Trend -->
-                <div class="card">
-                    <h3>📊 Andamento Mensile</h3>
-                    <div class="chart-container">
-                        <canvas id="trendChart"></canvas>
-                    </div>
+                <!-- Debug Info -->
+                <div class="debug-box" id="debugInfo" style="display:none;">
+                    <strong>🔍 Debug - Prime 10 righe elaborate:</strong>
+                    <div id="debugContent"></div>
                 </div>
 
-                <!-- Categorie e Suggerimenti -->
+                <!-- Grafici -->
                 <div class="grid-2" style="margin-top:20px;">
                     <div class="card">
-                        <h3>📊 Uscite per Categoria</h3>
-                        <div class="chart-container">
-                            <canvas id="categoryChart"></canvas>
-                        </div>
+                        <h3>📊 Andamento Mensile</h3>
+                        <div class="chart-container"><canvas id="trendChart"></canvas></div>
                     </div>
                     <div class="card">
-                        <h3>💡 Suggerimenti</h3>
-                        <div id="savingTips"></div>
+                        <h3>🥧 Uscite per Categoria</h3>
+                        <div class="chart-container"><canvas id="categoryChart"></canvas></div>
                     </div>
                 </div>
 
-                <!-- Tabella Transazioni -->
+                <!-- Suggerimenti -->
+                <div class="card" style="margin-top:20px;">
+                    <h3>💡 Analisi e Suggerimenti</h3>
+                    <div id="savingTips"></div>
+                </div>
+
+                <!-- Tabella -->
                 <div class="card" style="margin-top:20px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
-                        <h3>📋 Transazioni</h3>
+                        <h3>📋 Transazioni ({{transazioni.length}})</h3>
                         <div style="display:flex;gap:10px;flex-wrap:wrap;">
                             <input type="text" id="searchTransactions" placeholder="🔍 Cerca..." style="width:200px;">
-                            <select id="categoryFilter" style="width:180px;">
-                                <option value="">Tutte le categorie</option>
-                            </select>
+                            <select id="categoryFilter" style="width:180px;"><option value="">Tutte le categorie</option></select>
+                            <button class="btn btn-secondary btn-sm" onclick="toggleDebug()">🔍 Debug</button>
                         </div>
                     </div>
                     <div style="overflow-x:auto;max-height:500px;overflow-y:auto;">
                         <table>
                             <thead>
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Descrizione</th>
-                                    <th>Categoria</th>
-                                    <th>Importo</th>
-                                    <th>Tipo</th>
-                                </tr>
+                                <tr><th>#</th><th>Data</th><th>Descrizione</th><th>Categoria</th><th>Importo</th><th>Tipo</th></tr>
                             </thead>
                             <tbody id="transactionsBody"></tbody>
                         </table>
@@ -355,51 +216,40 @@
             </div>
         </div>
 
-        <!-- ==================== INVESTIMENTI ==================== -->
+        <!-- INVESTIMENTI -->
         <div id="investimentiView" class="hidden">
             <div style="text-align:center;padding:40px;" id="investimentiUpload">
                 <h2>📈 Carica il CSV del Portafoglio</h2>
-                <p style="color:var(--muted);margin:20px 0;">Formato Fineco: PatrimonioTotale_*.csv</p>
-                <button class="btn btn-info" onclick="document.getElementById('investimentiFileInput').click()">
-                    📂 Seleziona CSV
-                </button>
-                <button class="btn btn-secondary" onclick="loadInvestimentiDemo()" style="margin-left:10px;">
-                    📊 Carica Demo
-                </button>
+                <p style="color:var(--muted);margin:20px 0;">Formato: Data;Descrizione;Importo;Patrimonio</p>
+                <button class="btn btn-info" onclick="document.getElementById('investimentiFileInput').click()">📂 Seleziona CSV</button>
+                <button class="btn btn-secondary" onclick="loadInvestimentiDemo()" style="margin-left:10px;">📊 Carica Demo</button>
             </div>
 
             <div id="investimentiData" class="hidden">
-                <!-- KPI Investimenti -->
                 <div class="grid-3" style="margin-bottom:30px;">
                     <div class="kpi-card">
-                        <div style="color:var(--muted);font-size:12px;text-transform:uppercase;">💎 Patrimonio</div>
+                        <div style="color:var(--muted);font-size:12px;">💎 Patrimonio</div>
                         <div style="font-size:32px;font-weight:700;color:var(--accent);" id="patrimonioTotale">€0</div>
                     </div>
                     <div class="kpi-card">
-                        <div style="color:var(--muted);font-size:12px;text-transform:uppercase;">📊 Rendimento</div>
-                        <div style="font-size:32px;font-weight:700;color:var(--warning);" id="rendimentoTotale">0%</div>
+                        <div style="color:var(--muted);font-size:12px;">📊 Rendimento</div>
+                        <div style="font-size:32px;font-weight:700;" id="rendimentoTotale">0%</div>
                     </div>
                     <div class="kpi-card">
-                        <div style="color:var(--muted);font-size:12px;text-transform:uppercase;">💸 Costi</div>
+                        <div style="color:var(--muted);font-size:12px;">💸 Costi</div>
                         <div style="font-size:32px;font-weight:700;color:var(--danger);" id="costiTotali">€0</div>
                     </div>
                 </div>
 
-                <!-- Grafico Patrimonio -->
                 <div class="card">
                     <h3>📈 Andamento Patrimonio</h3>
-                    <div class="chart-container">
-                        <canvas id="patrimonioChart"></canvas>
-                    </div>
+                    <div class="chart-container"><canvas id="patrimonioChart"></canvas></div>
                 </div>
 
-                <!-- Composizione Portafoglio -->
                 <div class="grid-2" style="margin-top:20px;">
                     <div class="card">
-                        <h3>🥧 Composizione Portafoglio</h3>
-                        <div class="chart-container">
-                            <canvas id="composizioneChart"></canvas>
-                        </div>
+                        <h3>🥧 Composizione</h3>
+                        <div class="chart-container"><canvas id="composizioneChart"></canvas></div>
                     </div>
                     <div class="card">
                         <h3>📊 Dettaglio Titoli</h3>
@@ -407,348 +257,387 @@
                     </div>
                 </div>
 
-                <!-- Movimenti -->
                 <div class="card" style="margin-top:20px;">
                     <div class="nav-tabs">
                         <button class="nav-tab active" onclick="switchInvestimentiTab('movimenti')">Movimenti</button>
                         <button class="nav-tab" onclick="switchInvestimentiTab('portafoglio')">Portafoglio</button>
-                        <button class="nav-tab" onclick="switchInvestimentiTab('giornaliero')">Dati Giornalieri</button>
                     </div>
-                    
-                    <div id="tabMovimenti">
-                        <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;">
-                            <input type="text" id="searchMovimenti" placeholder="🔍 Cerca..." style="width:200px;">
-                            <select id="tipoMovimento" style="width:150px;">
-                                <option value="">Tutti i tipi</option>
-                                <option value="versamento">Versamenti</option>
-                                <option value="prelievo">Prelievi</option>
-                                <option value="costo">Costi</option>
-                                <option value="titolo">Titoli</option>
-                            </select>
-                        </div>
-                        <div style="overflow-x:auto;max-height:400px;overflow-y:auto;">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Data</th>
-                                        <th>Descrizione</th>
-                                        <th>Tipo</th>
-                                        <th>Importo</th>
-                                        <th>ISIN</th>
-                                        <th>Quantità</th>
-                                        <th>Prezzo</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="movimentiBody"></tbody>
-                            </table>
-                        </div>
+                    <div id="tabInvestimentiMovimenti" style="overflow-x:auto;max-height:400px;overflow-y:auto;">
+                        <table>
+                            <thead><tr><th>Data</th><th>Descrizione</th><th>Tipo</th><th>Importo</th><th>ISIN</th></tr></thead>
+                            <tbody id="movimentiBody"></tbody>
+                        </table>
                     </div>
-
-                    <div id="tabPortafoglio" class="hidden">
-                        <div style="overflow-x:auto;max-height:400px;overflow-y:auto;">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Titolo</th>
-                                        <th>ISIN</th>
-                                        <th>Quantità</th>
-                                        <th>Valore</th>
-                                        <th>Operazioni</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="portafoglioBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div id="tabGiornaliero" class="hidden">
-                        <div style="overflow-x:auto;max-height:400px;overflow-y:auto;">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Data</th>
-                                        <th>Descrizione</th>
-                                        <th>Importo</th>
-                                        <th>Patrimonio</th>
-                                        <th>Tipo</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="giornalieroBody"></tbody>
-                            </table>
-                        </div>
+                    <div id="tabInvestimentiPortafoglio" class="hidden" style="overflow-x:auto;max-height:400px;overflow-y:auto;">
+                        <table>
+                            <thead><tr><th>Titolo</th><th>ISIN</th><th>Quantità</th><th>Valore</th></tr></thead>
+                            <tbody id="portafoglioBody"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ==================== AUTO ==================== -->
+        <!-- AUTO -->
         <div id="autoView" class="hidden">
             <h2 style="margin-bottom:30px;">🚗 Gestione Spese Auto</h2>
-            
             <div class="card">
                 <h3>➕ Nuova Spesa</h3>
                 <div class="grid-4" style="gap:15px;margin-top:15px;">
-                    <div>
-                        <label style="font-size:12px;color:var(--muted);">Data</label>
-                        <input type="date" id="autoData">
-                    </div>
-                    <div>
-                        <label style="font-size:12px;color:var(--muted);">Tipo</label>
+                    <div><label style="font-size:12px;color:var(--muted);">Data</label><input type="date" id="autoData"></div>
+                    <div><label style="font-size:12px;color:var(--muted);">Tipo</label>
                         <select id="autoTipo">
-                            <option value="Carburante">⛽ Carburante</option>
-                            <option value="Manutenzione">🔧 Manutenzione</option>
-                            <option value="Assicurazione">🛡️ Assicurazione</option>
-                            <option value="Bollo">📋 Bollo</option>
-                            <option value="Pedaggi">🛣️ Pedaggi</option>
-                            <option value="Parcheggi">🅿️ Parcheggi</option>
-                            <option value="Lavaggio">🧹 Lavaggio</option>
-                            <option value="Altro">📌 Altro</option>
+                            <option>Carburante</option><option>Manutenzione</option><option>Assicurazione</option>
+                            <option>Bollo</option><option>Pedaggi</option><option>Parcheggi</option>
+                            <option>Lavaggio</option><option>Altro</option>
                         </select>
                     </div>
-                    <div>
-                        <label style="font-size:12px;color:var(--muted);">Importo (€)</label>
-                        <input type="number" id="autoImporto" placeholder="0.00" step="0.01">
-                    </div>
-                    <div>
-                        <label style="font-size:12px;color:var(--muted);">Km</label>
-                        <input type="number" id="autoKm" placeholder="0">
-                    </div>
+                    <div><label style="font-size:12px;color:var(--muted);">Importo (€)</label><input type="number" id="autoImporto" step="0.01"></div>
+                    <div><label style="font-size:12px;color:var(--muted);">Km</label><input type="number" id="autoKm"></div>
                 </div>
-                <div style="margin-top:15px;">
-                    <label style="font-size:12px;color:var(--muted);">Note</label>
-                    <input type="text" id="autoNote" placeholder="Note opzionali...">
-                </div>
+                <div style="margin-top:15px;"><label style="font-size:12px;color:var(--muted);">Note</label><input type="text" id="autoNote"></div>
                 <button class="btn btn-warning" onclick="aggiungiSpesaAuto()" style="margin-top:15px;">➕ Aggiungi</button>
             </div>
-
             <div class="grid-3" style="margin-top:20px;">
-                <div class="kpi-card">
-                    <div style="color:var(--muted);font-size:12px;">⛽ Carburante</div>
-                    <div style="font-size:28px;font-weight:700;color:var(--warning);" id="spesaCarburante">€0</div>
-                </div>
-                <div class="kpi-card">
-                    <div style="color:var(--muted);font-size:12px;">🔧 Manutenzione</div>
-                    <div style="font-size:28px;font-weight:700;color:var(--info);" id="spesaManutenzione">€0</div>
-                </div>
-                <div class="kpi-card">
-                    <div style="color:var(--muted);font-size:12px;">💰 Totale</div>
-                    <div style="font-size:28px;font-weight:700;color:var(--danger);" id="spesaTotaleAuto">€0</div>
-                </div>
+                <div class="kpi-card"><div style="color:var(--muted);font-size:12px;">⛽ Carburante</div><div style="font-size:28px;font-weight:700;color:var(--warning);" id="spesaCarburante">€0</div></div>
+                <div class="kpi-card"><div style="color:var(--muted);font-size:12px;">🔧 Manutenzione</div><div style="font-size:28px;font-weight:700;color:var(--info);" id="spesaManutenzione">€0</div></div>
+                <div class="kpi-card"><div style="color:var(--muted);font-size:12px;">💰 Totale</div><div style="font-size:28px;font-weight:700;color:var(--danger);" id="spesaTotaleAuto">€0</div></div>
             </div>
-
             <div class="card" style="margin-top:20px;">
-                <h3>📋 Storico Spese</h3>
-                <div style="overflow-x:auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Tipo</th>
-                                <th>Importo</th>
-                                <th>Km</th>
-                                <th>Note</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="autoSpeseBody"></tbody>
-                    </table>
-                </div>
+                <h3>📋 Storico</h3>
+                <div style="overflow-x:auto;"><table><thead><tr><th>Data</th><th>Tipo</th><th>Importo</th><th>Km</th><th>Note</th><th></th></tr></thead><tbody id="autoSpeseBody"></tbody></table></div>
             </div>
         </div>
 
-        <!-- ==================== RISPARMI ==================== -->
+        <!-- RISPARMI -->
         <div id="risparmiView" class="hidden">
             <h2 style="margin-bottom:30px;">💡 Analisi Risparmi</h2>
-            
-            <div class="card">
-                <h3>Analisi delle Tue Abitudini</h3>
-                <div id="analisiRisparmi" style="margin-top:20px;">
-                    <p style="color:var(--muted);">Carica un estratto conto per vedere l'analisi</p>
-                </div>
-            </div>
+            <div class="card"><div id="analisiRisparmi"><p style="color:var(--muted);">Carica un estratto conto per vedere l'analisi</p></div></div>
         </div>
     </div>
 
     <script>
-        // ==================== STATO GLOBALE ====================
+        // ==================== STATO ====================
         let transazioni = [];
-        let datiInvestimenti = {
-            raw: [],
-            movimenti: [],
-            titoli: {},
-            patrimonioIniziale: 0,
-            patrimonioFinale: 0
-        };
+        let datiInvestimenti = { raw: [], movimenti: [], titoli: {}, patrimonioIniziale: 0, patrimonioFinale: 0 };
         let speseAuto = JSON.parse(localStorage.getItem('speseAuto') || '[]');
-        let trendChart = null;
-        let categoryChart = null;
-        let patrimonioChart = null;
-        let composizioneChart = null;
+        let trendChart = null, categoryChart = null, patrimonioChart = null, composizioneChart = null;
 
-        // ==================== UTILITY ====================
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            const colors = {
-                success: 'background:#1a3e1a;border:1px solid #2a5e2a;color:#00c853;',
-                error: 'background:#3e1a1a;border:1px solid #5e2a2a;color:#ff5252;',
-                warning: 'background:#3e3a1a;border:1px solid #5e5a2a;color:#ffd740;',
-                info: 'background:#1a2e3e;border:1px solid #2a4e5e;color:#4fc3f7;'
-            };
-            toast.style.cssText = colors[type] + 'padding:14px 20px;border-radius:12px;margin-bottom:8px;animation:slideIn 0.3s ease;';
-            toast.textContent = message;
-            container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
-        }
-
-        function parseAmount(value) {
-            if (typeof value === 'number') return value;
-            if (!value) return 0;
-            let str = String(value).replace(/[€\s]/g, '').trim();
-            if (str.includes(',') && str.includes('.')) {
+        // ==================== FUNZIONE PARSING IMPORTO ROBUSTA ====================
+        function parseImportoBancario(valore) {
+            if (valore === null || valore === undefined || valore === '') return 0;
+            if (typeof valore === 'number') return valore;
+            
+            let str = String(valore).trim();
+            
+            // Debug
+            console.log(`[PARSE] Input: "${str}"`);
+            
+            // Rimuovi simboli euro e spazi
+            str = str.replace(/[€\u20AC]/g, '').replace(/\s/g, '');
+            
+            // Caso 1: numero negativo tra parentesi (123,45)
+            if (/^\(.*\)$/.test(str)) {
+                str = '-' + str.slice(1, -1);
+            }
+            
+            // Caso 2: segno meno alla fine (formato bancario italiano) 123,45-
+            if (str.endsWith('-')) {
+                str = '-' + str.slice(0, -1);
+            }
+            
+            // Caso 3: segno più alla fine 123,45+
+            if (str.endsWith('+')) {
+                str = str.slice(0, -1);
+            }
+            
+            // Caso 4: formato italiano con punto migliaia e virgola decimali: 1.234,56
+            if (str.includes('.') && str.includes(',')) {
+                // Il punto è separatore migliaia, la virgola è decimale
                 str = str.replace(/\./g, '').replace(',', '.');
-            } else if (str.includes(',') && !str.includes('.')) {
-                const parts = str.split(',');
-                str = parts[1].length <= 2 ? str.replace(',', '.') : str.replace(',', '');
             }
-            if (str.endsWith('-')) str = '-' + str.slice(0, -1);
-            if (str.startsWith('(') && str.endsWith(')')) str = '-' + str.slice(1, -1);
-            const num = parseFloat(str);
-            return isNaN(num) ? 0 : num;
-        }
-
-        function parseDate(value) {
-            if (!value) return '';
-            if (value instanceof Date && !isNaN(value)) return value.toISOString().split('T')[0];
-            const str = String(value).trim();
-            if (/^\d{5}$/.test(str)) {
-                const d = new Date((parseInt(str) - 25569) * 86400 * 1000);
-                if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
-            }
-            const formats = [
-                { regex: /^(\d{2})[\/\-\.](\d{2})[\/\-\.](\d{4})$/, order: [3, 2, 1] },
-                { regex: /^(\d{4})[\/\-\.](\d{2})[\/\-\.](\d{2})$/, order: [1, 2, 3] },
-                { regex: /^(\d{2})[\/\-\.](\d{2})[\/\-\.](\d{2})$/, order: [3, 2, 1] }
-            ];
-            for (const fmt of formats) {
-                const match = str.match(fmt.regex);
-                if (match) {
-                    let parts = [match[1], match[2], match[3]];
-                    if (fmt.order[2] === 1 && parts[2].length === 2) parts[2] = '20' + parts[2];
-                    return `${parts[fmt.order[0]-1]}-${parts[fmt.order[1]-1].padStart(2,'0')}-${parts[fmt.order[2]-1].padStart(2,'0')}`;
+            // Caso 5: solo virgola come decimale: 1234,56
+            else if (str.includes(',') && !str.includes('.')) {
+                // Controlla se dopo la virgola ci sono esattamente 2 cifre
+                const parti = str.split(',');
+                if (parti.length === 2 && parti[1].length <= 2 && /^\d+$/.test(parti[1])) {
+                    str = str.replace(',', '.');
+                } else {
+                    // Virgola come separatore migliaia
+                    str = str.replace(/,/g, '');
                 }
             }
-            return str;
+            // Caso 6: solo punto come decimale: 1234.56
+            else if (str.includes('.') && !str.includes(',')) {
+                // Già in formato corretto
+            }
+            
+            // Rimuovi caratteri non numerici tranne punto e meno
+            str = str.replace(/[^0-9.\-]/g, '');
+            
+            // Gestisci doppi meno
+            str = str.replace(/--/g, '-');
+            
+            const num = parseFloat(str);
+            const risultato = isNaN(num) ? 0 : num;
+            
+            console.log(`[PARSE] Output: ${risultato} (${formatCurrency(risultato)})`);
+            
+            return risultato;
         }
 
         function formatCurrency(amount) {
-            return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(amount);
+            if (Math.abs(amount) >= 1000000) {
+                return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(amount);
+            }
+            return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+        }
+
+        function formatCurrencyShort(amount) {
+            if (Math.abs(amount) >= 1000000) {
+                return '€' + (amount / 1000000).toFixed(1) + 'M';
+            } else if (Math.abs(amount) >= 1000) {
+                return '€' + (amount / 1000).toFixed(1) + 'K';
+            }
+            return formatCurrency(amount);
+        }
+
+        function parseDate(valore) {
+            if (!valore) return '';
+            if (valore instanceof Date && !isNaN(valore)) {
+                const d = new Date(valore);
+                return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+            }
+            const str = String(valore).trim();
+            
+            // Data Excel (numero seriale)
+            if (/^\d{5}$/.test(str)) {
+                const d = new Date((parseInt(str) - 25569) * 86400 * 1000);
+                if (!isNaN(d.getTime())) {
+                    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+                }
+            }
+            
+            // DD/MM/YYYY
+            let m = str.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+            if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+            
+            // YYYY-MM-DD o YYYY/MM/DD
+            m = str.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/);
+            if (m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+            
+            return str;
+        }
+
+        function showToast(msg, type = 'success') {
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            const colors = { success: '#1a3e1a,#2a5e2a,#00c853', error: '#3e1a1a,#5e2a2a,#ff5252', warning: '#3e3a1a,#5e5a2a,#ffd740', info: '#1a2e3e,#2a4e5e,#4fc3f7' };
+            const [bg, bd, cl] = (colors[type] || colors.success).split(',');
+            t.style.cssText = `background:${bg};border:1px solid ${bd};color:${cl};padding:14px 20px;border-radius:12px;margin-bottom:8px;`;
+            t.textContent = msg;
+            c.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 3000);
         }
 
         function showView(view) {
-            const views = ['homeView', 'contoView', 'investimentiView', 'autoView', 'risparmiView'];
-            views.forEach(v => document.getElementById(v).classList.add('hidden'));
-            
-            const titles = {
-                home: 'Dashboard Finanziaria',
-                conto: 'Estratto Conto',
-                investimenti: 'Investimenti',
-                auto: 'Spese Auto',
-                risparmi: 'Analisi Risparmi'
-            };
-            
-            const viewElement = document.getElementById(view + 'View');
-            if (viewElement) viewElement.classList.remove('hidden');
+            ['homeView','contoView','investimentiView','autoView','risparmiView'].forEach(v => document.getElementById(v).classList.add('hidden'));
+            const ve = document.getElementById(view + 'View');
+            if (ve) ve.classList.remove('hidden');
+            const titles = { home: 'Dashboard', conto: 'Estratto Conto', investimenti: 'Investimenti', auto: 'Spese Auto', risparmi: 'Analisi Risparmi' };
             document.getElementById('pageTitle').textContent = titles[view] || '';
-            
             if (view === 'auto') aggiornaVistaAuto();
             if (view === 'risparmi') aggiornaAnalisiRisparmi();
         }
 
-        // ==================== CONTO ====================
+        // ==================== CATEGORIZZAZIONE ====================
         function categorizzaTransazione(descrizione) {
-            const desc = descrizione.toLowerCase();
+            if (!descrizione) return 'Altro';
+            const d = descrizione.toLowerCase();
             const categorie = {
-                'Stipendio': ['stipendio', 'salario', 'accredito stipendio'],
-                'Affitto/Mutuo': ['affitto', 'mutuo', 'canone'],
-                'Utenze': ['bolletta', 'enel', 'gas', 'acqua', 'telecom', 'vodafone', 'wind', 'tim', 'fastweb', 'iliad'],
-                'Alimentari': ['supermercato', 'alimentari', 'conad', 'coop', 'esselunga', 'carrefour', 'lidl', 'aldi', 'eurospin'],
-                'Trasporti': ['benzina', 'carburante', 'diesel', 'autostrada', 'pedaggio'],
-                'Ristorazione': ['ristorante', 'pizzeria', 'bar', 'caffè', 'pub', 'take away', 'delivery'],
-                'Shopping': ['amazon', 'zalando', 'ebay', 'negozio', 'abbigliamento'],
-                'Salute': ['farmacia', 'medico', 'ospedale', 'dentista'],
-                'Intrattenimento': ['netflix', 'spotify', 'cinema', 'teatro', 'sky', 'dazn', 'prime video'],
-                'Assicurazioni': ['assicurazione', 'polizza', 'rc auto'],
-                'Banca': ['commissione', 'bollo', 'canone conto', 'imposta di bollo'],
-                'Investimenti': ['pac', 'etf', 'fondo', 'investimento', 'trading'],
-                'Auto': ['auto', 'gomme', 'tagliando', 'revisione', 'meccanico']
+                'Stipendio': ['stipendio', 'salario', 'accredito stipendio', 'emolumenti', 'retribuzione'],
+                'Affitto/Mutuo': ['affitto', 'mutuo', 'canone', 'locazione'],
+                'Utenze': ['bolletta', 'enel', 'enel energia', 'gas', 'acqua', 'telecom', 'vodafone', 'wind', 'tim', 'fastweb', 'iliad', 'energia', 'riscaldamento'],
+                'Alimentari': ['supermercato', 'alimentari', 'conad', 'coop', 'esselunga', 'carrefour', 'lidl', 'aldi', 'eurospin', 'iper', 'spesa', 'alimentare'],
+                'Trasporti': ['benzina', 'carburante', 'diesel', 'autostrada', 'pedaggio', 'trenitalia', 'atm', 'bus', 'metro', 'tram', 'taxi', 'ncc'],
+                'Ristorazione': ['ristorante', 'pizzeria', 'bar', 'caffè', 'pub', 'take away', 'delivery', 'just eat', 'deliveroo', 'glovo'],
+                'Shopping': ['amazon', 'zalando', 'ebay', 'negozio', 'abbigliamento', 'scarpe', 'moda', 'abbigliament'],
+                'Salute': ['farmacia', 'medico', 'ospedale', 'dentista', 'oculista', 'visita', 'farmaco'],
+                'Intrattenimento': ['netflix', 'spotify', 'cinema', 'teatro', 'concerto', 'sky', 'dazn', 'prime video', 'disney+', 'now tv'],
+                'Assicurazioni': ['assicurazione', 'polizza', 'rc auto', 'infortuni', 'vita'],
+                'Banca': ['commissione', 'bollo', 'canone conto', 'imposta di bollo', 'tenuta conto'],
+                'Investimenti': ['pac', 'etf', 'fondo', 'investimento', 'trading', 'directa', 'fineco', 'degiro'],
+                'Auto': ['auto', 'gomme', 'tagliando', 'revisione', 'meccanico', 'carrozzeria', 'officina'],
+                'Telefonia': ['telefono', 'cellulare', 'ricarica', 'mobile'],
+                'Istruzione': ['scuola', 'università', 'corso', 'libro', 'master'],
+                'Animali': ['veterinario', 'cibo cane', 'cibo gatto', 'pet', 'zooplus']
             };
-            for (const [categoria, keywords] of Object.entries(categorie)) {
-                if (keywords.some(kw => desc.includes(kw))) return categoria;
+            for (const [cat, keywords] of Object.entries(categorie)) {
+                if (keywords.some(kw => d.includes(kw))) return cat;
             }
             return 'Altro';
         }
 
+        // ==================== CONTO ====================
         function processBankData(rawData) {
-            if (!Array.isArray(rawData) || rawData.length === 0) return;
+            if (!Array.isArray(rawData) || rawData.length === 0) {
+                showToast('Dati non validi o file vuoto', 'error');
+                return;
+            }
             
-            let headerRowIndex = -1;
-            const headerKeywords = ['data', 'descrizione', 'importo', 'dettagli', 'causale', 'valuta', 'saldo'];
+            console.log('=== INIZIO ELABORAZIONE FILE ===');
+            console.log(`Righe totali: ${rawData.length}`);
+            
+            // Trova intestazione
+            let headerRow = 0;
+            const keywords = ['data', 'descrizione', 'importo', 'dettagli', 'causale', 'valuta', 'saldo', 'dare', 'avere'];
             
             for (let i = 0; i < Math.min(rawData.length, 20); i++) {
                 const row = rawData[i];
                 if (!Array.isArray(row)) continue;
-                const rowText = row.map(cell => String(cell || '').toLowerCase()).join(' ');
-                const matchCount = headerKeywords.filter(kw => rowText.includes(kw)).length;
-                if (matchCount >= 2) { headerRowIndex = i; break; }
+                const text = row.map(c => String(c || '').toLowerCase()).join(' ');
+                let matchCount = 0;
+                for (const kw of keywords) {
+                    if (text.includes(kw)) matchCount++;
+                }
+                if (matchCount >= 2) {
+                    headerRow = i;
+                    console.log(`Intestazione trovata alla riga ${i}:`, row);
+                    break;
+                }
             }
             
-            if (headerRowIndex === -1) headerRowIndex = 0;
+            const headers = rawData[headerRow].map(h => String(h || '').trim());
+            console.log('Headers:', headers);
             
-            const headers = rawData[headerRowIndex].map(h => String(h || '').trim());
+            // Mappa colonne
+            let colData = -1, colDesc = -1, colImporto = -1, colDare = -1, colAvere = -1;
             
-            const columnMap = {
-                date: headers.findIndex(h => /data/i.test(h)),
-                description: headers.findIndex(h => /descrizione|dettagli|causale|operazione/i.test(h)),
-                amount: headers.findIndex(h => /importo|amount|dare|avere/i.test(h))
-            };
+            for (let i = 0; i < headers.length; i++) {
+                const h = headers[i].toLowerCase();
+                if (colData === -1 && (h.includes('data') || h.includes('date'))) colData = i;
+                if (colDesc === -1 && (h.includes('descrizione') || h.includes('dettagli') || h.includes('causale') || h.includes('operazione'))) colDesc = i;
+                if (colImporto === -1 && (h.includes('importo') || h.includes('import'))) colImporto = i;
+                if (colDare === -1 && h === 'dare') colDare = i;
+                if (colAvere === -1 && h === 'avere') colAvere = i;
+            }
+            
+            // Se non troviamo importo ma abbiamo Dare/Avere
+            if (colImporto === -1 && colDare >= 0 && colAvere >= 0) {
+                console.log('Usando colonne DARE/AVERE per calcolare importo');
+            }
+            
+            // Se ancora non troviamo, cerca in tutte le colonne
+            if (colImporto === -1 && colDare === -1) {
+                // Prova a trovare colonne con valori numerici
+                for (let i = 0; i < headers.length; i++) {
+                    if (i === colData || i === colDesc) continue;
+                    let hasNumbers = false;
+                    for (let r = headerRow + 1; r < Math.min(headerRow + 5, rawData.length); r++) {
+                        const v = rawData[r]?.[i];
+                        if (v && String(v).match(/[\d,.\-()]/)) { hasNumbers = true; break; }
+                    }
+                    if (hasNumbers && colImporto === -1) colImporto = i;
+                }
+            }
+            
+            console.log(`Colonne mappate: Data=${colData}, Desc=${colDesc}, Importo=${colImporto}, Dare=${colDare}, Avere=${colAvere}`);
             
             transazioni = [];
+            let debugRows = [];
             
-            for (let i = headerRowIndex + 1; i < rawData.length; i++) {
+            for (let i = headerRow + 1; i < rawData.length; i++) {
                 const row = rawData[i];
                 if (!Array.isArray(row) || row.length === 0) continue;
                 
-                const hasData = row.some(cell => cell !== '' && cell !== null && cell !== undefined);
+                // Salta righe vuote
+                const hasData = row.some(c => c !== '' && c !== null && c !== undefined);
                 if (!hasData) continue;
                 
+                // Salta righe di riepilogo
                 const rowText = row.map(c => String(c || '').toLowerCase()).join(' ');
-                if (rowText.includes('totale') || rowText.includes('saldo iniziale') || rowText.includes('riepilogo')) continue;
+                if (rowText.includes('totale') || rowText.includes('riepilogo') || rowText.includes('saldo iniziale') || rowText.includes('saldo finale')) continue;
                 
-                const dateStr = columnMap.date >= 0 ? String(row[columnMap.date] || '') : '';
-                const descStr = columnMap.description >= 0 ? String(row[columnMap.description] || '') : '';
-                let amount = columnMap.amount >= 0 ? parseAmount(row[columnMap.amount]) : 0;
+                const dataStr = colData >= 0 ? String(row[colData] || '') : '';
+                const descStr = colDesc >= 0 ? String(row[colDesc] || '') : '';
                 
-                if (amount === 0 && columnMap.amount === -1) {
+                let importo = 0;
+                
+                // Calcola importo
+                if (colDare >= 0 && colAvere >= 0) {
+                    // Formato DARE/AVERE
+                    const dare = parseImportoBancario(row[colDare]);
+                    const avere = parseImportoBancario(row[colAvere]);
+                    importo = avere - dare;
+                } else if (colImporto >= 0) {
+                    importo = parseImportoBancario(row[colImporto]);
+                } else {
+                    // Cerca qualsiasi valore numerico nella riga
                     for (let j = 0; j < row.length; j++) {
-                        const val = parseAmount(row[j]);
-                        if (val !== 0) { amount = val; break; }
+                        if (j === colData || j === colDesc) continue;
+                        const val = parseImportoBancario(row[j]);
+                        if (val !== 0) {
+                            importo = val;
+                            break;
+                        }
                     }
                 }
                 
-                const date = parseDate(dateStr);
-                if (!date || date === '') continue;
-                if (amount === 0 && descStr === '') continue;
+                const data = parseDate(dataStr);
+                
+                // Debug prime righe
+                if (debugRows.length < 10) {
+                    debugRows.push({ riga: i, data: dataStr, dataParsata: data, importoRaw: colImporto >= 0 ? String(row[colImporto]) : 'N/D', importoParsato: importo, desc: descStr.substring(0, 50) });
+                }
+                
+                if (!data || data === '') continue;
                 
                 transazioni.push({
-                    data: date,
+                    data: data,
                     descrizione: descStr || 'N/D',
-                    importo: amount,
+                    importo: importo,
                     categoria: categorizzaTransazione(descStr)
                 });
             }
             
+            console.log(`Transazioni elaborate: ${transazioni.length}`);
+            console.log('Debug righe:', debugRows);
+            
+            // Salva debug
+            window._debugRows = debugRows;
+            window._transazioni = transazioni;
+            
+            // Ordina per data
             transazioni.sort((a, b) => a.data.localeCompare(b.data));
+            
+            if (transazioni.length === 0) {
+                showToast('⚠️ Nessuna transazione trovata. Prova a caricare il file come CSV.', 'warning');
+                aggiornaDebugInfo(debugRows);
+                document.getElementById('debugInfo').style.display = 'block';
+            } else {
+                document.getElementById('debugInfo').style.display = 'none';
+            }
+        }
+
+        function aggiornaDebugInfo(debugRows) {
+            const content = document.getElementById('debugContent');
+            if (!debugRows || debugRows.length === 0) {
+                content.innerHTML = 'Nessun dato di debug disponibile';
+                return;
+            }
+            content.innerHTML = debugRows.map(r => 
+                `<div>Riga ${r.riga}: Data="${r.data}" → ${r.dataParsata} | Importo raw="${r.importoRaw}" → ${r.importoParsato} (${formatCurrency(r.importoParsato)}) | Desc: ${r.desc}</div>`
+            ).join('');
+        }
+
+        function toggleDebug() {
+            const debugBox = document.getElementById('debugInfo');
+            if (debugBox.style.display === 'none') {
+                aggiornaDebugInfo(window._debugRows || []);
+                debugBox.style.display = 'block';
+            } else {
+                debugBox.style.display = 'none';
+            }
         }
 
         document.getElementById('contoFileInput').addEventListener('change', function(e) {
@@ -756,28 +645,38 @@
             if (!file) return;
             
             showToast('Analisi del file in corso...', 'warning');
+            console.log(`Caricamento file: ${file.name} (${(file.size/1024).toFixed(1)} KB)`);
             
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array', cellDates: true });
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false });
+                    const workbook = XLSX.read(data, { type: 'array', cellDates: true, raw: true });
+                    const sheetName = workbook.SheetNames[0];
+                    console.log(`Foglio: ${sheetName}`);
+                    
+                    const sheet = workbook.Sheets[sheetName];
+                    
+                    // Prova prima con raw: true per preservare i formati originali
+                    let rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: true });
+                    
+                    // Se non funziona, prova senza raw
+                    if (!rawData || rawData.length === 0) {
+                        rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                    }
+                    
+                    console.log(`Righe lette: ${rawData?.length || 0}`);
                     
                     processBankData(rawData);
                     
-                    if (transazioni.length === 0) {
-                        showToast('⚠️ Nessuna transazione trovata. Verifica il formato.', 'warning');
-                        return;
+                    if (transazioni.length > 0) {
+                        showToast(`✅ Caricato! ${transazioni.length} transazioni elaborate`, 'success');
+                        aggiornaVistaConto();
+                        showView('conto');
                     }
-                    
-                    showToast(`✅ Caricato: ${file.name} (${transazioni.length} transazioni)`, 'success');
-                    aggiornaVistaConto();
-                    showView('conto');
                 } catch (error) {
-                    console.error(error);
-                    showToast('Errore: ' + error.message, 'error');
+                    console.error('Errore:', error);
+                    showToast(`Errore: ${error.message}. Riprova o converti in CSV.`, 'error');
                 }
             };
             reader.onerror = () => showToast('Errore lettura file', 'error');
@@ -786,39 +685,40 @@
 
         function loadContoDemo() {
             const demo = [
-                ['Data', 'Descrizione', 'Importo'],
-                ['2024-01-05', 'Stipendio', 2500.00],
-                ['2024-01-10', 'Affitto', -800.00],
-                ['2024-01-12', 'Supermercato Conad', -156.30],
-                ['2024-01-15', 'Bolletta Enel', -89.50],
-                ['2024-01-18', 'Benzina Q8', -65.00],
-                ['2024-01-20', 'Ristorante', -45.00],
-                ['2024-01-22', 'Amazon', -34.99],
-                ['2024-01-25', 'Netflix', -12.99],
-                ['2024-02-05', 'Stipendio', 2500.00],
-                ['2024-02-10', 'Affitto', -800.00],
-                ['2024-02-12', 'Spesa Esselunga', -198.75],
-                ['2024-02-15', 'Bolletta Gas', -120.00],
-                ['2024-02-18', 'Carburante', -72.00],
-                ['2024-02-20', 'Ristorante Sushi', -68.00],
-                ['2024-02-22', 'Zalando', -89.99],
-                ['2024-02-25', 'Spotify', -9.99],
-                ['2024-02-28', 'Tagliando Auto', -350.00],
-                ['2024-03-05', 'Stipendio', 2500.00],
-                ['2024-03-10', 'Affitto', -800.00],
-                ['2024-03-12', 'Lidl', -112.40],
-                ['2024-03-15', 'Enel Energia', -95.00],
-                ['2024-03-18', 'Benzina IP', -58.00],
-                ['2024-03-20', 'Pizzeria', -42.00],
-                ['2024-03-22', 'Amazon Elettronica', -129.99],
-                ['2024-03-25', 'Telefono Mobile', -29.99],
-                ['2024-03-28', 'Assicurazione Auto', -450.00],
+                ['Data contabile', 'Descrizione operazione', 'Importo (€)'],
+                ['05/01/2024', 'ACCREDITO STIPENDIO GENNAIO', '2.500,00'],
+                ['10/01/2024', 'AFFITTO GENNAIO', '800,00-'],
+                ['12/01/2024', 'SUPERMERCATO CONAD', '156,30-'],
+                ['15/01/2024', 'BOLLETTA ENEL ENERGIA', '89,50-'],
+                ['18/01/2024', 'BENZINA Q8 SELF', '65,00-'],
+                ['20/01/2024', 'RISTORANTE DA MARIO', '45,00-'],
+                ['22/01/2024', 'AMAZON PRIME SHOPPING', '34,99-'],
+                ['25/01/2024', 'NETFLIX MENSILE', '12,99-'],
+                ['28/01/2024', 'FARMACIA COMUNALE', '28,50-'],
+                ['05/02/2024', 'ACCREDITO STIPENDIO FEBBRAIO', '2.500,00'],
+                ['10/02/2024', 'AFFITTO FEBBRAIO', '800,00-'],
+                ['12/02/2024', 'SPESA ESSELUNGA', '198,75-'],
+                ['15/02/2024', 'BOLLETTA GAS', '120,00-'],
+                ['18/02/2024', 'CARBURANTE ESSO', '72,00-'],
+                ['20/02/2024', 'RISTORANTE SUSHI', '68,00-'],
+                ['22/02/2024', 'ZALANDO ABBIGLIAMENTO', '89,99-'],
+                ['25/02/2024', 'SPOTIFY PREMIUM', '9,99-'],
+                ['28/02/2024', 'TAGLIANDO AUTO OFFICINA', '350,00-'],
+                ['05/03/2024', 'ACCREDITO STIPENDIO MARZO', '2.500,00'],
+                ['10/03/2024', 'AFFITTO MARZO', '800,00-'],
+                ['12/03/2024', 'LIDL SPESA', '112,40-'],
+                ['15/03/2024', 'ENEL ENERGIA BOLLETTA', '95,00-'],
+                ['18/03/2024', 'BENZINA IP', '58,00-'],
+                ['20/03/2024', 'PIZZERIA BELLA NAPOLI', '42,00-'],
+                ['22/03/2024', 'AMAZON ELETTRONICA', '129,99-'],
+                ['25/03/2024', 'RICARICA TELEFONICA', '29,99-'],
+                ['28/03/2024', 'ASSICURAZIONE AUTO RCA', '450,00-'],
             ];
             
             processBankData(demo);
             aggiornaVistaConto();
             showView('conto');
-            showToast('✅ Demo caricata!', 'success');
+            showToast('✅ Demo caricata con formati bancari italiani!', 'success');
         }
 
         function aggiornaVistaConto() {
@@ -829,12 +729,19 @@
             
             const entrate = transazioni.filter(t => t.importo > 0);
             const uscite = transazioni.filter(t => t.importo < 0);
-            const totaleEntrate = entrate.reduce((sum, t) => sum + t.importo, 0);
-            const totaleUscite = uscite.reduce((sum, t) => sum + Math.abs(t.importo), 0);
+            const totEntrate = entrate.reduce((s, t) => s + t.importo, 0);
+            const totUscite = uscite.reduce((s, t) => s + Math.abs(t.importo), 0);
+            const saldo = totEntrate - totUscite;
             
-            document.getElementById('saldoCorrente').textContent = formatCurrency(totaleEntrate - totaleUscite);
-            document.getElementById('entrateTotali').textContent = formatCurrency(totaleEntrate);
-            document.getElementById('usciteTotali').textContent = formatCurrency(totaleUscite);
+            document.getElementById('saldoCorrente').textContent = formatCurrencyShort(saldo);
+            document.getElementById('saldoCorrente').style.color = saldo >= 0 ? 'var(--accent)' : 'var(--danger)';
+            document.getElementById('saldoSub').textContent = `${transazioni.length} transazioni`;
+            
+            document.getElementById('entrateTotali').textContent = formatCurrencyShort(totEntrate);
+            document.getElementById('entrateSub').textContent = `${entrate.length} entrate`;
+            
+            document.getElementById('usciteTotali').textContent = formatCurrencyShort(totUscite);
+            document.getElementById('usciteSub').textContent = `${uscite.length} uscite`;
             
             aggiornaTrendChart();
             aggiornaCategoryChart();
@@ -845,34 +752,33 @@
 
         function aggiornaTrendChart() {
             const ctx = document.getElementById('trendChart').getContext('2d');
-            const monthlyData = {};
+            const monthly = {};
             
             transazioni.forEach(t => {
-                const month = t.data.substring(0, 7);
-                if (!monthlyData[month]) monthlyData[month] = { entrate: 0, uscite: 0 };
-                if (t.importo > 0) monthlyData[month].entrate += t.importo;
-                else monthlyData[month].uscite += Math.abs(t.importo);
+                const m = t.data.substring(0, 7);
+                if (!monthly[m]) monthly[m] = { e: 0, u: 0 };
+                if (t.importo > 0) monthly[m].e += t.importo;
+                else monthly[m].u += Math.abs(t.importo);
             });
             
-            const months = Object.keys(monthlyData).sort();
-            const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
-            const labels = months.map(m => `${monthNames[parseInt(m.split('-')[1])-1]} ${m.split('-')[0]}`);
+            const months = Object.keys(monthly).sort();
+            const mn = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+            const labels = months.map(m => `${mn[parseInt(m.split('-')[1])-1]} ${m.split('-')[0]}`);
             
             if (trendChart) trendChart.destroy();
-            
             trendChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels,
                     datasets: [
-                        { label: 'Entrate', data: months.map(m => monthlyData[m].entrate), backgroundColor: 'rgba(0,200,83,0.6)', borderColor: '#00c853', borderWidth: 1 },
-                        { label: 'Uscite', data: months.map(m => monthlyData[m].uscite), backgroundColor: 'rgba(255,82,82,0.6)', borderColor: '#ff5252', borderWidth: 1 }
+                        { label: 'Entrate', data: months.map(m => monthly[m].e), backgroundColor: 'rgba(0,200,83,0.6)', borderColor: '#00c853', borderWidth: 1 },
+                        { label: 'Uscite', data: months.map(m => monthly[m].u), backgroundColor: 'rgba(255,82,82,0.6)', borderColor: '#ff5252', borderWidth: 1 }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { labels: { color: '#e0e8e0' } }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${formatCurrency(ctx.raw)}` } } },
-                    scales: { x: { ticks: { color: '#8a9e8a' }, grid: { color: '#1a2e1a' } }, y: { ticks: { color: '#8a9e8a', callback: v => formatCurrency(v) }, grid: { color: '#1a2e1a' } } }
+                    scales: { x: { ticks: { color: '#8a9e8a' }, grid: { color: '#1a2e1a' } }, y: { ticks: { color: '#8a9e8a', callback: v => formatCurrencyShort(v) }, grid: { color: '#1a2e1a' } } }
                 }
             });
         }
@@ -880,27 +786,22 @@
         function aggiornaCategoryChart() {
             const ctx = document.getElementById('categoryChart').getContext('2d');
             const uscite = transazioni.filter(t => t.importo < 0);
-            const catSpese = {};
+            const cats = {};
+            uscite.forEach(t => { cats[t.categoria] = (cats[t.categoria] || 0) + Math.abs(t.importo); });
             
-            uscite.forEach(t => {
-                const cat = t.categoria || 'Altro';
-                catSpese[cat] = (catSpese[cat] || 0) + Math.abs(t.importo);
-            });
-            
-            const sorted = Object.entries(catSpese).sort((a, b) => b[1] - a[1]).slice(0, 10);
-            const colors = ['#ff5252', '#ff7043', '#ffa726', '#ffca28', '#66bb6a', '#26a69a', '#42a5f5', '#5c6bc0', '#ab47bc', '#ec407a'];
+            const sorted = Object.entries(cats).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            const colors = ['#ff5252','#ff7043','#ffa726','#ffca28','#66bb6a','#26a69a','#42a5f5','#5c6bc0','#ab47bc','#ec407a'];
             
             if (categoryChart) categoryChart.destroy();
-            
             categoryChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: sorted.map(([cat]) => cat),
-                    datasets: [{ data: sorted.map(([, amt]) => amt), backgroundColor: colors.slice(0, sorted.length), borderWidth: 2, borderColor: '#111811' }]
+                    labels: sorted.map(([c]) => c),
+                    datasets: [{ data: sorted.map(([,a]) => a), backgroundColor: colors.slice(0, sorted.length), borderWidth: 2, borderColor: '#111811' }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right', labels: { color: '#e0e8e0', font: { size: 11 } } }, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${formatCurrency(ctx.raw)}` } } }
+                    plugins: { legend: { position: 'right', labels: { color: '#e0e8e0', font: { size: 10 } } }, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${formatCurrency(ctx.raw)}` } } }
                 }
             });
         }
@@ -908,43 +809,56 @@
         function aggiornaSavingTips() {
             const container = document.getElementById('savingTips');
             const uscite = transazioni.filter(t => t.importo < 0);
-            if (uscite.length === 0) { container.innerHTML = '<p style="color:var(--muted)">Nessuna spesa</p>'; return; }
+            if (uscite.length === 0) { container.innerHTML = '<p style="color:var(--muted);">Nessuna spesa da analizzare</p>'; return; }
             
             const catSpese = {};
             uscite.forEach(t => { catSpese[t.categoria] = (catSpese[t.categoria] || 0) + Math.abs(t.importo); });
-            const totale = Object.values(catSpese).reduce((a, b) => a + b, 0);
+            const totale = Object.values(catSpese).reduce((a,b) => a+b, 0);
             
-            container.innerHTML = Object.entries(catSpese).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([cat, spesa]) => {
+            // Trova abbonamenti
+            const abbonamenti = transazioni.filter(t => t.importo < 0 && 
+                ['netflix','spotify','prime','dazn','sky','disney+'].some(a => t.descrizione.toLowerCase().includes(a))
+            ).reduce((s,t) => s + Math.abs(t.importo), 0);
+            
+            let html = '';
+            if (abbonamenti > 30) {
+                html += `<div class="saving-tip warning"><strong>📺 Abbonamenti: ${formatCurrency(abbonamenti)}</strong> - Potresti risparmiare ~${formatCurrency(abbonamenti * 0.3)} eliminando quelli che non usi.</div>`;
+            }
+            
+            const ristorazione = catSpese['Ristorazione'] || 0;
+            if (ristorazione > 200) {
+                html += `<div class="saving-tip warning"><strong>🍕 Ristorazione: ${formatCurrency(ristorazione)}</strong> - Riduci del 30% e risparmi ~${formatCurrency(ristorazione * 0.3)}/mese.</div>`;
+            }
+            
+            html += Object.entries(catSpese).sort((a,b) => b[1]-a[1]).slice(0, 5).map(([cat, spesa]) => {
                 const pct = ((spesa / totale) * 100).toFixed(1);
                 const cls = pct > 30 ? 'danger' : pct > 15 ? 'warning' : '';
                 return `<div class="saving-tip ${cls}"><strong>${cat}:</strong> ${formatCurrency(spesa)} (${pct}%)</div>`;
             }).join('');
+            
+            container.innerHTML = html;
         }
 
-        function aggiornaTabellaTransazioni(filtroTesto = '', filtroCategoria = '') {
+        function aggiornaTabellaTransazioni(fTesto = '', fCat = '') {
             let filtrate = transazioni;
-            if (filtroTesto) {
-                const s = filtroTesto.toLowerCase();
-                filtrate = filtrate.filter(t => t.descrizione.toLowerCase().includes(s) || t.categoria.toLowerCase().includes(s));
-            }
-            if (filtroCategoria) filtrate = filtrate.filter(t => t.categoria === filtroCategoria);
+            if (fTesto) { const s = fTesto.toLowerCase(); filtrate = filtrate.filter(t => t.descrizione.toLowerCase().includes(s) || t.categoria.toLowerCase().includes(s)); }
+            if (fCat) filtrate = filtrate.filter(t => t.categoria === fCat);
             
-            const tbody = document.getElementById('transactionsBody');
-            tbody.innerHTML = [...filtrate].reverse().map(t => `
+            document.getElementById('transactionsBody').innerHTML = [...filtrate].reverse().map((t, i) => `
                 <tr>
+                    <td style="color:var(--muted);">${filtrate.length - i}</td>
                     <td>${new Date(t.data).toLocaleDateString('it-IT')}</td>
                     <td>${t.descrizione}</td>
                     <td><span class="badge badge-info">${t.categoria}</span></td>
-                    <td style="color:${t.importo >= 0 ? 'var(--accent)' : 'var(--danger)'};font-weight:600;">${formatCurrency(t.importo)}</td>
+                    <td class="${t.importo >= 0 ? 'text-success' : 'text-danger'}">${formatCurrency(t.importo)}</td>
                     <td><span class="badge ${t.importo >= 0 ? 'badge-success' : 'badge-danger'}">${t.importo >= 0 ? 'Entrata' : 'Uscita'}</span></td>
                 </tr>
             `).join('');
         }
 
         function popolaFiltriCategoria() {
-            const select = document.getElementById('categoryFilter');
             const cats = [...new Set(transazioni.map(t => t.categoria))].sort();
-            select.innerHTML = '<option value="">Tutte le categorie</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('categoryFilter').innerHTML = '<option value="">Tutte le categorie</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
         }
 
         document.getElementById('searchTransactions').addEventListener('input', function() {
@@ -960,34 +874,30 @@
             if (lines.length < 2) return false;
             
             let headerIdx = 0;
-            for (let i = 0; i < Math.min(lines.length, 10); i++) {
-                if (lines[i].toLowerCase().includes('data') && (lines[i].toLowerCase().includes('patrimonio') || lines[i].toLowerCase().includes('importo'))) {
-                    headerIdx = i; break;
-                }
+            for (let i = 0; i < Math.min(10, lines.length); i++) {
+                if (lines[i].toLowerCase().includes('data')) { headerIdx = i; break; }
             }
             
-            const headers = lines[headerIdx].split(';').map(h => h.trim().replace(/"/g, ''));
+            const headers = lines[headerIdx].split(';').map(h => h.trim().replace(/"/g,''));
             const colData = headers.findIndex(h => /data/i.test(h));
             const colDesc = headers.findIndex(h => /descrizione|dettagli/i.test(h));
             const colImp = headers.findIndex(h => /importo/i.test(h));
             const colPatr = headers.findIndex(h => /patrimonio/i.test(h));
             const colISIN = headers.findIndex(h => /isin/i.test(h));
             const colQta = headers.findIndex(h => /quantit|qtt/i.test(h));
-            const colPrezzo = headers.findIndex(h => /prezzo|corr/i.test(h));
             
             datiInvestimenti = { raw: [], movimenti: [], titoli: {}, patrimonioIniziale: 0, patrimonioFinale: 0 };
             
             for (let i = headerIdx + 1; i < lines.length; i++) {
-                const cells = lines[i].split(';').map(c => c.trim().replace(/"/g, ''));
+                const cells = lines[i].split(';').map(c => c.trim().replace(/"/g,''));
                 if (cells.length < 2 || !cells[colData]) continue;
                 
                 const data = parseDate(cells[colData]);
                 const desc = colDesc >= 0 ? cells[colDesc] : '';
-                const imp = colImp >= 0 ? parseAmount(cells[colImp]) : 0;
-                const patr = colPatr >= 0 ? parseAmount(cells[colPatr]) : 0;
+                const imp = colImp >= 0 ? parseImportoBancario(cells[colImp]) : 0;
+                const patr = colPatr >= 0 ? parseImportoBancario(cells[colPatr]) : 0;
                 const isin = colISIN >= 0 ? cells[colISIN] : '';
-                const qta = colQta >= 0 ? parseAmount(cells[colQta]) : 0;
-                const prezzo = colPrezzo >= 0 ? parseAmount(cells[colPrezzo]) : 0;
+                const qta = colQta >= 0 ? parseImportoBancario(cells[colQta]) : 0;
                 
                 let tipo = 'altro';
                 if (desc.toLowerCase().includes('versamento')) tipo = 'versamento';
@@ -995,12 +905,8 @@
                 else if (desc.toLowerCase().includes('commissione') || desc.toLowerCase().includes('costo')) tipo = 'costo';
                 else if (desc.toLowerCase().includes('acquist') || desc.toLowerCase().includes('vendit') || isin) tipo = 'titolo';
                 
-                datiInvestimenti.raw.push({ data, desc, imp, patrimonio: patr, tipo, isin, qta, prezzo });
-                
-                if (imp !== 0 || (tipo === 'titolo' && qta !== 0)) {
-                    datiInvestimenti.movimenti.push({ data, desc, imp, tipo, isin, qta, prezzo });
-                }
-                
+                datiInvestimenti.raw.push({ data, desc, imp, patrimonio: patr, tipo, isin, qta });
+                if (imp !== 0 || tipo === 'titolo') datiInvestimenti.movimenti.push({ data, desc, imp, tipo, isin, qta });
                 if ((tipo === 'titolo' || isin) && desc) {
                     if (!datiInvestimenti.titoli[desc]) datiInvestimenti.titoli[desc] = { nome: desc, isin, qta: 0, valore: 0, movimenti: 0 };
                     datiInvestimenti.titoli[desc].qta += qta;
@@ -1014,53 +920,42 @@
                 datiInvestimenti.patrimonioIniziale = patrimoni[0].patrimonio;
                 datiInvestimenti.patrimonioFinale = patrimoni[patrimoni.length - 1].patrimonio;
             }
-            
             return true;
         }
 
         document.getElementById('investimentiFileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
-            
             const reader = new FileReader();
             reader.onload = function(e) {
                 if (parseInvestimentiCSV(e.target.result)) {
                     aggiornaVistaInvestimenti();
                     showView('investimenti');
-                    showToast(`✅ CSV caricato: ${file.name}`, 'success');
+                    showToast('✅ CSV caricato!', 'success');
                 } else {
-                    showToast('Formato CSV non valido', 'error');
+                    showToast('Formato non valido', 'error');
                 }
             };
             reader.readAsText(file);
         });
 
         function loadInvestimentiDemo() {
-            const demo = [];
-            let patrimonio = 10000;
-            const startDate = new Date(2024, 0, 1);
+            const demo = [
+                'Data;Descrizione;Importo;Patrimonio;ISIN;Quantita',
+                '2024-01-01;Saldo iniziale;0;10000;;0',
+                '2024-01-15;Versamento;500;10500;;0',
+                '2024-02-01;Acquisto ETF World;-1000;9500;IE00BK5BQT80;18.2',
+                '2024-02-15;Commissioni;-2.50;9497.50;;0',
+                '2024-03-01;Versamento;1000;10497.50;;0',
+                '2024-03-15;Acquisto ETF EM;-500;9997.50;IE00BKM4GZ66;17.2',
+                '2024-04-01;Commissioni;-2.50;9995;;0',
+                '2024-04-15;Dividendi;45;10040;;0',
+                '2024-05-01;Versamento;1000;11040;;0',
+                '2024-05-15;Acquisto Bond;-2000;9040;IT0001234567;20',
+                '2024-06-01;Commissioni;-2.50;9037.50;;0',
+            ].join('\n');
             
-            for (let d = 0; d < 90; d++) {
-                const date = new Date(startDate.getTime() + d * 86400000);
-                if (date.getDay() === 0 || date.getDay() === 6) continue;
-                const ds = date.toISOString().split('T')[0];
-                patrimonio += (Math.random() - 0.48) * 50;
-                
-                let riga = `${ds};;0;${Math.round(patrimonio*100)/100};altro;;0;0`;
-                
-                if (d === 5) riga = `${ds};Versamento;500;${Math.round(patrimonio*100)/100};versamento;;0;0`;
-                if (d === 12) riga = `${ds};Acquisto ETF World;-1000;${Math.round(patrimonio*100)/100};titolo;IE00BK5BQT80;18.2;54.95`;
-                if (d === 25) riga = `${ds};Commissioni;-2.50;${Math.round(patrimonio*100)/100};costo;;0;0`;
-                if (d === 35) riga = `${ds};Versamento;1000;${Math.round(patrimonio*100)/100};versamento;;0;0`;
-                if (d === 45) riga = `${ds};Acquisto ETF EM;-500;${Math.round(patrimonio*100)/100};titolo;IE00BKM4GZ66;17.2;29.07`;
-                if (d === 55) riga = `${ds};Commissioni;-2.50;${Math.round(patrimonio*100)/100};costo;;0;0`;
-                if (d === 65) riga = `${ds};Dividendi;45;${Math.round(patrimonio*100)/100};versamento;;0;0`;
-                if (d === 75) riga = `${ds};Acquisto Bond;-2000;${Math.round(patrimonio*100)/100};titolo;IT0001234567;20;100`;
-                
-                demo.push(riga);
-            }
-            
-            parseInvestimentiCSV(demo.join('\n'));
+            parseInvestimentiCSV(demo);
             aggiornaVistaInvestimenti();
             showView('investimenti');
             showToast('✅ Demo investimenti caricata!', 'success');
@@ -1068,41 +963,23 @@
 
         function aggiornaVistaInvestimenti() {
             if (datiInvestimenti.raw.length === 0) return;
-            
             document.getElementById('investimentiUpload').classList.add('hidden');
             document.getElementById('investimentiData').classList.remove('hidden');
             
             const pf = datiInvestimenti.patrimonioFinale;
             const pi = datiInvestimenti.patrimonioIniziale;
-            const rendimento = pi > 0 ? ((pf - pi) / pi * 100) : 0;
-            const costi = datiInvestimenti.movimenti.filter(m => m.tipo === 'costo').reduce((sum, m) => sum + Math.abs(m.imp), 0);
+            const rend = pi > 0 ? ((pf - pi) / pi * 100) : 0;
+            const costi = datiInvestimenti.movimenti.filter(m => m.tipo === 'costo').reduce((s, m) => s + Math.abs(m.imp), 0);
             
             document.getElementById('patrimonioTotale').textContent = formatCurrency(pf);
-            document.getElementById('rendimentoTotale').textContent = (rendimento >= 0 ? '+' : '') + rendimento.toFixed(2) + '%';
-            document.getElementById('rendimentoTotale').style.color = rendimento >= 0 ? 'var(--accent)' : 'var(--danger)';
+            document.getElementById('rendimentoTotale').textContent = (rend >= 0 ? '+' : '') + rend.toFixed(2) + '%';
+            document.getElementById('rendimentoTotale').style.color = rend >= 0 ? 'var(--accent)' : 'var(--danger)';
             document.getElementById('costiTotali').textContent = formatCurrency(costi);
             
-            aggiornaPatrimonioChart();
-            aggiornaComposizioneChart();
-            aggiornaDettaglioTitoli();
-            
-            // Mostra tab movimenti di default
-            document.getElementById('tabMovimenti').classList.remove('hidden');
-            document.getElementById('tabPortafoglio').classList.add('hidden');
-            document.getElementById('tabGiornaliero').classList.add('hidden');
-            document.querySelectorAll('.nav-tab').forEach((tab, i) => tab.classList.toggle('active', i === 0));
-            
-            aggiornaTabellaMovimenti();
-            aggiornaTabellaPortafoglio();
-            aggiornaTabellaGiornaliero();
-        }
-
-        function aggiornaPatrimonioChart() {
+            // Grafico patrimonio
             const ctx = document.getElementById('patrimonioChart').getContext('2d');
             const dati = datiInvestimenti.raw.filter(r => r.patrimonio > 0);
-            
             if (patrimonioChart) patrimonioChart.destroy();
-            
             patrimonioChart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -1111,129 +988,70 @@
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#e0e8e0' } }, tooltip: { callbacks: { label: ctx => `Patrimonio: ${formatCurrency(ctx.raw)}` } } },
-                    scales: { x: { ticks: { color: '#8a9e8a', maxTicksLimit: 12 }, grid: { color: '#1a2e1a' } }, y: { ticks: { color: '#8a9e8a', callback: v => formatCurrency(v) }, grid: { color: '#1a2e1a' } } }
+                    plugins: { legend: { labels: { color: '#e0e8e0' } }, tooltip: { callbacks: { label: c => formatCurrency(c.raw) } } },
+                    scales: { x: { ticks: { color: '#8a9e8a', maxTicksLimit: 12 }, grid: { color: '#1a2e1a' } }, y: { ticks: { color: '#8a9e8a', callback: v => formatCurrencyShort(v) }, grid: { color: '#1a2e1a' } } }
                 }
             });
-        }
-
-        function aggiornaComposizioneChart() {
-            const ctx = document.getElementById('composizioneChart').getContext('2d');
+            
+            // Composizione
+            const ctx2 = document.getElementById('composizioneChart').getContext('2d');
             const titoli = Object.values(datiInvestimenti.titoli);
-            const totaleTitoli = titoli.reduce((sum, t) => sum + Math.abs(t.valore), 0);
-            const liquidita = datiInvestimenti.patrimonioFinale - totaleTitoli;
-            
-            const labels = titoli.map(t => t.nome.length > 25 ? t.nome.substring(0, 23) + '...' : t.nome);
+            const totTitoli = titoli.reduce((s, t) => s + Math.abs(t.valore), 0);
+            const liq = pf - totTitoli;
+            const labels = titoli.map(t => t.nome.substring(0, 25));
             const data = titoli.map(t => Math.abs(t.valore));
-            const colors = ['#4fc3f7', '#00c853', '#ffd740', '#ff5252', '#ab47bc', '#ff7043', '#26a69a', '#5c6bc0'];
-            
-            if (liquidita > 0) {
-                labels.push('Liquidità');
-                data.push(liquidita);
-            }
+            const colors = ['#4fc3f7','#00c853','#ffd740','#ff5252','#ab47bc','#ff7043'];
+            if (liq > 0) { labels.push('Liquidità'); data.push(liq); }
             
             if (composizioneChart) composizioneChart.destroy();
-            
-            composizioneChart = new Chart(ctx, {
+            composizioneChart = new Chart(ctx2, {
                 type: 'doughnut',
                 data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, labels.length), borderWidth: 2, borderColor: '#111811' }] },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right', labels: { color: '#e0e8e0', font: { size: 10 } } }, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${formatCurrency(ctx.raw)}` } } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#e0e8e0', font: { size: 10 } } } } }
             });
-        }
-
-        function aggiornaDettaglioTitoli() {
-            const container = document.getElementById('dettaglioTitoli');
-            const titoli = Object.values(datiInvestimenti.titoli);
-            const totaleTitoli = titoli.reduce((sum, t) => sum + Math.abs(t.valore), 0);
             
-            container.innerHTML = titoli.map(t => {
-                const pct = totaleTitoli > 0 ? (Math.abs(t.valore) / totaleTitoli * 100).toFixed(1) : 0;
-                return `
-                    <div style="background:#0a0e0a;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-                            <strong style="font-size:13px;">${t.nome.substring(0, 30)}</strong>
-                            <span style="color:var(--accent);font-weight:600;">${formatCurrency(Math.abs(t.valore))}</span>
-                        </div>
-                        <div style="font-size:10px;color:var(--muted);margin-top:4px;">ISIN: ${t.isin || 'N/D'} | ${t.movimenti} operazioni</div>
-                        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:#4fc3f7;"></div></div>
-                        <div style="font-size:10px;color:var(--muted);">${pct}% del portafoglio</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function switchInvestimentiTab(tab) {
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById('tabMovimenti').classList.add('hidden');
-            document.getElementById('tabPortafoglio').classList.add('hidden');
-            document.getElementById('tabGiornaliero').classList.add('hidden');
+            // Dettaglio titoli
+            document.getElementById('dettaglioTitoli').innerHTML = titoli.map(t => `
+                <div style="background:#0a0e0a;border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;">
+                    <strong>${t.nome.substring(0, 30)}</strong>
+                    <span style="float:right;color:var(--accent);">${formatCurrency(Math.abs(t.valore))}</span>
+                    <div style="font-size:10px;color:var(--muted);">ISIN: ${t.isin || 'N/D'} | ${t.movimenti} op.</div>
+                </div>
+            `).join('');
             
-            if (tab === 'movimenti') {
-                document.getElementById('tabMovimenti').classList.remove('hidden');
-                document.querySelector('.nav-tab:nth-child(1)').classList.add('active');
-            } else if (tab === 'portafoglio') {
-                document.getElementById('tabPortafoglio').classList.remove('hidden');
-                document.querySelector('.nav-tab:nth-child(2)').classList.add('active');
-            } else {
-                document.getElementById('tabGiornaliero').classList.remove('hidden');
-                document.querySelector('.nav-tab:nth-child(3)').classList.add('active');
-            }
-        }
-
-        function aggiornaTabellaMovimenti(filtroTesto = '', filtroTipo = '') {
-            let movimenti = [...datiInvestimenti.movimenti].reverse();
-            if (filtroTesto) {
-                const s = filtroTesto.toLowerCase();
-                movimenti = movimenti.filter(m => m.desc.toLowerCase().includes(s) || m.isin.toLowerCase().includes(s));
-            }
-            if (filtroTipo) movimenti = movimenti.filter(m => m.tipo === filtroTipo);
-            
-            document.getElementById('movimentiBody').innerHTML = movimenti.map(m => `
+            // Tabelle
+            document.getElementById('movimentiBody').innerHTML = [...datiInvestimenti.movimenti].reverse().map(m => `
                 <tr>
                     <td>${new Date(m.data).toLocaleDateString('it-IT')}</td>
                     <td>${m.desc}</td>
                     <td><span class="badge badge-info">${m.tipo}</span></td>
-                    <td style="color:${m.imp >= 0 ? 'var(--accent)' : 'var(--danger)'};font-weight:600;">${formatCurrency(m.imp)}</td>
-                    <td style="font-size:10px;color:var(--muted);">${m.isin || '-'}</td>
-                    <td>${m.qta || '-'}</td>
-                    <td>${m.prezzo ? formatCurrency(m.prezzo) : '-'}</td>
+                    <td class="${m.imp >= 0 ? 'text-success' : 'text-danger'}">${formatCurrency(m.imp)}</td>
+                    <td style="font-size:10px;">${m.isin || '-'}</td>
                 </tr>
             `).join('');
-        }
-
-        function aggiornaTabellaPortafoglio() {
+            
             document.getElementById('portafoglioBody').innerHTML = Object.values(datiInvestimenti.titoli).map(t => `
                 <tr>
                     <td><strong>${t.nome}</strong></td>
-                    <td style="font-size:10px;color:var(--muted);">${t.isin || '-'}</td>
+                    <td style="font-size:10px;">${t.isin || '-'}</td>
                     <td>${t.qta}</td>
-                    <td style="color:var(--accent);font-weight:600;">${formatCurrency(Math.abs(t.valore))}</td>
-                    <td>${t.movimenti}</td>
+                    <td class="text-success">${formatCurrency(Math.abs(t.valore))}</td>
                 </tr>
             `).join('');
         }
 
-        function aggiornaTabellaGiornaliero() {
-            document.getElementById('giornalieroBody').innerHTML = [...datiInvestimenti.raw].reverse().map(r => `
-                <tr>
-                    <td>${new Date(r.data).toLocaleDateString('it-IT')}</td>
-                    <td>${r.desc || '-'}</td>
-                    <td style="color:${r.imp >= 0 ? 'var(--accent)' : 'var(--danger)'};">${r.imp ? formatCurrency(r.imp) : '-'}</td>
-                    <td style="font-weight:600;">${formatCurrency(r.patrimonio)}</td>
-                    <td><span class="badge badge-info">${r.tipo}</span></td>
-                </tr>
-            `).join('');
+        function switchInvestimentiTab(tab) {
+            document.getElementById('tabInvestimentiMovimenti').classList.add('hidden');
+            document.getElementById('tabInvestimentiPortafoglio').classList.add('hidden');
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            if (tab === 'movimenti') {
+                document.getElementById('tabInvestimentiMovimenti').classList.remove('hidden');
+                document.querySelector('.nav-tab:nth-child(1)').classList.add('active');
+            } else {
+                document.getElementById('tabInvestimentiPortafoglio').classList.remove('hidden');
+                document.querySelector('.nav-tab:nth-child(2)').classList.add('active');
+            }
         }
-
-        document.getElementById('searchMovimenti').addEventListener('input', function() {
-            aggiornaTabellaMovimenti(this.value, document.getElementById('tipoMovimento').value);
-        });
-        document.getElementById('tipoMovimento').addEventListener('change', function() {
-            aggiornaTabellaMovimenti(document.getElementById('searchMovimenti').value, this.value);
-        });
 
         // ==================== AUTO ====================
         function aggiungiSpesaAuto() {
@@ -1242,46 +1060,36 @@
             const importo = parseFloat(document.getElementById('autoImporto').value);
             const km = parseInt(document.getElementById('autoKm').value) || 0;
             const note = document.getElementById('autoNote').value;
-            
             if (!data || !importo) { showToast('Compila data e importo', 'error'); return; }
-            
             speseAuto.push({ id: Date.now(), data, tipo, importo, km, note });
             speseAuto.sort((a, b) => b.data.localeCompare(a.data));
             localStorage.setItem('speseAuto', JSON.stringify(speseAuto));
-            
             document.getElementById('autoImporto').value = '';
             document.getElementById('autoKm').value = '';
-            document.getElementById('autoNote').value = '';
-            
             aggiornaVistaAuto();
-            showToast('✅ Spesa auto aggiunta!', 'success');
+            showToast('✅ Aggiunto!', 'success');
         }
 
         function eliminaSpesaAuto(id) {
             speseAuto = speseAuto.filter(s => s.id !== id);
             localStorage.setItem('speseAuto', JSON.stringify(speseAuto));
             aggiornaVistaAuto();
-            showToast('Spesa eliminata');
         }
 
         function aggiornaVistaAuto() {
             const totali = {};
             speseAuto.forEach(s => { totali[s.tipo] = (totali[s.tipo] || 0) + s.importo; });
-            
             document.getElementById('spesaCarburante').textContent = formatCurrency(totali['Carburante'] || 0);
             document.getElementById('spesaManutenzione').textContent = formatCurrency(totali['Manutenzione'] || 0);
-            document.getElementById('spesaTotaleAuto').textContent = formatCurrency(speseAuto.reduce((sum, s) => sum + s.importo, 0));
-            
-            const icone = { 'Carburante': '⛽', 'Manutenzione': '🔧', 'Assicurazione': '🛡️', 'Bollo': '📋', 'Pedaggi': '🛣️', 'Parcheggi': '🅿️', 'Lavaggio': '🧹', 'Altro': '📌' };
-            
+            document.getElementById('spesaTotaleAuto').textContent = formatCurrency(speseAuto.reduce((s, sp) => s + sp.importo, 0));
             document.getElementById('autoSpeseBody').innerHTML = speseAuto.map(s => `
                 <tr>
                     <td>${new Date(s.data).toLocaleDateString('it-IT')}</td>
-                    <td>${icone[s.tipo] || '📌'} ${s.tipo}</td>
-                    <td style="color:var(--danger);font-weight:600;">${formatCurrency(-s.importo)}</td>
-                    <td>${s.km ? s.km + ' km' : '-'}</td>
+                    <td>${s.tipo}</td>
+                    <td class="text-danger">${formatCurrency(-s.importo)}</td>
+                    <td>${s.km || '-'}</td>
                     <td>${s.note || '-'}</td>
-                    <td><button onclick="eliminaSpesaAuto(${s.id})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;">🗑️</button></td>
+                    <td><button onclick="eliminaSpesaAuto(${s.id})" style="background:none;border:none;color:var(--danger);cursor:pointer;">🗑️</button></td>
                 </tr>
             `).join('');
         }
@@ -1289,69 +1097,30 @@
         // ==================== RISPARMI ====================
         function aggiornaAnalisiRisparmi() {
             const container = document.getElementById('analisiRisparmi');
-            
             if (transazioni.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align:center;padding:40px;">
-                        <p style="font-size:48px;">📊</p>
-                        <p style="color:var(--muted);">Carica un estratto conto per vedere l'analisi</p>
-                        <button class="btn btn-primary" onclick="showView('conto')" style="margin-top:20px;">📂 Carica Conto</button>
-                    </div>`;
+                container.innerHTML = '<p style="text-align:center;padding:40px;color:var(--muted);">📊 Carica un estratto conto prima.</p>';
                 return;
             }
-            
-            const entrate = transazioni.filter(t => t.importo > 0).reduce((sum, t) => sum + t.importo, 0);
-            const uscite = transazioni.filter(t => t.importo < 0).reduce((sum, t) => sum + Math.abs(t.importo), 0);
+            const entrate = transazioni.filter(t => t.importo > 0).reduce((s, t) => s + t.importo, 0);
+            const uscite = transazioni.filter(t => t.importo < 0).reduce((s, t) => s + Math.abs(t.importo), 0);
             const risparmio = entrate - uscite;
             const tasso = entrate > 0 ? (risparmio / entrate * 100) : 0;
-            
-            // Trova abbonamenti
-            const abbonamenti = transazioni.filter(t => t.importo < 0 && 
-                ['netflix', 'spotify', 'prime', 'dazn', 'sky', 'disney+'].some(a => t.descrizione.toLowerCase().includes(a))
-            ).reduce((sum, t) => sum + Math.abs(t.importo), 0);
-            
-            // Ristorazione
-            const ristorazione = transazioni.filter(t => t.importo < 0 && t.categoria === 'Ristorazione')
-                .reduce((sum, t) => sum + Math.abs(t.importo), 0);
-            
-            let html = `
-                <div class="grid-2" style="margin-bottom:20px;">
-                    <div class="kpi-card">
-                        <div style="color:var(--muted);font-size:12px;">💰 Tasso di Risparmio</div>
-                        <div style="font-size:36px;font-weight:700;color:${tasso >= 20 ? 'var(--accent)' : tasso >= 0 ? 'var(--warning)' : 'var(--danger)'};">${tasso.toFixed(1)}%</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div style="color:var(--muted);font-size:12px;">💡 Risparmio Mensile</div>
-                        <div style="font-size:36px;font-weight:700;color:var(--accent);">${formatCurrency(risparmio)}</div>
-                    </div>
-                </div>`;
-            
-            if (abbonamenti > 30) {
-                html += `<div class="saving-tip warning"><strong>📺 Abbonamenti: ${formatCurrency(abbonamenti)}</strong><br>Potresti risparmiare ${formatCurrency(abbonamenti * 0.3)} eliminando quelli che non usi.</div>`;
-            }
-            
-            if (ristorazione > 200) {
-                html += `<div class="saving-tip warning"><strong>🍕 Ristorazione: ${formatCurrency(ristorazione)}</strong><br>Cucinare a casa può farti risparmiare fino a ${formatCurrency(ristorazione * 0.5)}.</div>`;
-            }
-            
-            if (tasso < 20) {
-                html += `<div class="saving-tip danger"><strong>⚠️ Tasso di risparmio basso</strong><br>Cerca di raggiungere almeno il 20% seguendo la regola 50-30-20.</div>`;
-            } else {
-                html += `<div class="saving-tip"><strong>✅ Ottimo tasso di risparmio!</strong><br>Stai risparmiando più del 20%, continua così!</div>`;
-            }
-            
-            container.innerHTML = html;
+            container.innerHTML = `
+                <p><strong>Tasso di risparmio:</strong> <span style="color:${tasso >= 20 ? 'var(--accent)' : 'var(--warning)'}">${tasso.toFixed(1)}%</span></p>
+                <p><strong>Risparmio:</strong> ${formatCurrency(risparmio)}</p>
+                ${tasso < 20 ? '<div class="saving-tip warning">Cerca di raggiungere almeno il 20% di risparmio seguendo la regola 50-30-20.</div>' : '<div class="saving-tip">✅ Ottimo! Stai risparmiando bene.</div>'}
+            `;
         }
 
         // ==================== INIT ====================
         document.getElementById('autoData').value = new Date().toISOString().split('T')[0];
         showView('home');
         
-        console.log('🚀 Excel Studio - Pronto!');
-        console.log('📂 Carica un file Excel/CSV nella sezione Conto');
-        console.log('📈 Vai su Investimenti per il portafoglio');
-        console.log('🚗 Vai su Auto per tracciare le spese');
-        console.log('💡 Vai su Risparmi per l\'analisi');
+        console.log('🚀 Excel Studio pronto!');
+        console.log('💡 Usa i pulsanti per navigare tra le sezioni');
+        console.log('📂 Carica un file Excel nella sezione Conto');
+        console.log('🔍 Se i saldi sono sbagliati, clicca Debug per vedere le prime righe elaborate');
+        console.log('⚠️ Formati supportati: 1.234,56 | 1234,56- | (1234,56) | -1234.56');
     </script>
 </body>
 </html>
