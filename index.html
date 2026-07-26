@@ -1,534 +1,1129 @@
-// ==================== SOSTITUISCI TUTTA LA PARTE INVESTIMENTI CON QUESTO ====================
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Studio - Gestione Finanziaria Completa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e0a; --card: #111811; --border: #1a2e1a;
+            --text: #e0e8e0; --muted: #8a9e8a; --accent: #00c853;
+            --danger: #ff5252; --warning: #ffd740; --info: #4fc3f7;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header {
+            background: rgba(10,14,10,0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); padding: 15px 30px;
+            position: sticky; top: 0; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+        }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+        .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: all 0.3s; }
+        .kpi-card:hover { border-color: #2a4e2a; transform: translateY(-2px); }
+        .btn {
+            padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
+            border: none; transition: all 0.2s; font-size: 14px; white-space: nowrap;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary { background: var(--accent); color: #000; }
+        .btn-primary:hover { background: #00e676; transform: translateY(-1px); }
+        .btn-secondary { background: var(--border); color: var(--text); border: 1px solid #2a4e2a; }
+        .btn-secondary:hover { background: #2a4e2a; }
+        .btn-info { background: #1a2e3e; color: var(--info); border: 1px solid #2a4e5e; }
+        .btn-info:hover { background: #2a4e5e; }
+        .btn-warning { background: #3e3a1a; color: var(--warning); border: 1px solid #5e5a2a; }
+        .btn-warning:hover { background: #5e5a2a; }
+        .btn-danger { background: #3e1a1a; color: var(--danger); border: 1px solid #5e2a2a; }
+        .btn-danger:hover { background: #5e2a2a; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: var(--border); color: var(--accent); padding: 12px; text-align: left; font-weight: 600; position: sticky; top: 0; z-index: 10; }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+        tr:hover td { background: rgba(0,200,83,0.05); }
+        .text-success { color: var(--accent); font-weight: 600; }
+        .text-danger { color: var(--danger); font-weight: 600; }
+        .text-warning { color: var(--warning); font-weight: 600; }
+        .text-info { color: var(--info); font-weight: 600; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .badge-success { background: rgba(0,200,83,0.2); color: var(--accent); }
+        .badge-danger { background: rgba(255,82,82,0.2); color: var(--danger); }
+        .badge-info { background: rgba(79,195,247,0.2); color: var(--info); }
+        .badge-warning { background: rgba(255,215,64,0.2); color: var(--warning); }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .hidden { display: none !important; }
+        input, select, textarea {
+            background: #0a0e0a; border: 1px solid #2a4e2a; border-radius: 8px;
+            padding: 10px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; width: 100%;
+        }
+        input:focus, select:focus { border-color: var(--accent); outline: none; }
+        .chart-container { position: relative; height: 300px; margin: 20px 0; }
+        .nav-tabs { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
+        .nav-tab { padding: 8px 16px; border-radius: 8px; cursor: pointer; background: var(--card); border: 1px solid var(--border); color: var(--muted); font-size: 13px; transition: all 0.2s; }
+        .nav-tab:hover { color: var(--text); border-color: #2a4e2a; }
+        .nav-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+        .progress-bar { height: 6px; background: #1a2e1a; border-radius: 3px; overflow: hidden; margin: 6px 0; }
+        .progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+        .debug-box { background: #1a1a0a; border: 1px solid #4e4e2a; border-radius: 8px; padding: 12px; margin: 10px 0; font-family: monospace; font-size: 11px; color: #ffd740; max-height: 200px; overflow-y: auto; }
+        .saving-tip { background: #1a2e1a; border-left: 4px solid var(--accent); padding: 15px; margin: 10px 0; border-radius: 0 8px 8px 0; }
+        .saving-tip.warning { border-left-color: var(--warning); background: #2e2a1a; }
+        .saving-tip.danger { border-left-color: var(--danger); background: #2e1a1a; }
+        .file-input-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+        @media (max-width: 768px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div id="toastContainer" style="position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;"></div>
 
-// Stato investimenti
-let datiInvestimenti = { 
-    raw: [], 
-    movimenti: [], 
-    titoli: {}, 
-    patrimonioIniziale: 0, 
-    patrimonioFinale: 0 
-};
-let patrimonioChart = null;
-let composizioneChart = null;
+    <!-- Header -->
+    <div class="header">
+        <div style="display:flex;align-items:center;gap:15px;">
+            <div style="width:40px;height:40px;background:linear-gradient(135deg,#00c853,#00e676);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;" onclick="navigate('home')">📊</div>
+            <div>
+                <h1 style="font-size:18px;font-weight:700;">Excel Studio</h1>
+                <p style="font-size:11px;color:var(--muted);" id="pageTitle">Dashboard Finanziaria</p>
+            </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-secondary btn-sm" onclick="navigate('home')">🏠 Home</button>
+            <button class="btn btn-secondary btn-sm" onclick="navigate('conto')">💰 Conto</button>
+            <button class="btn btn-info btn-sm" onclick="navigate('investimenti')">📈 Investimenti</button>
+            <button class="btn btn-warning btn-sm" onclick="navigate('auto')">🚗 Auto</button>
+            <button class="btn btn-secondary btn-sm" onclick="navigate('risparmi')">💡 Risparmi</button>
+        </div>
+    </div>
 
-// Classifica il tipo di movimento
-function classificaMovimento(descrizione, isin) {
-    if (!descrizione) return 'altro';
-    const d = descrizione.toLowerCase();
-    if (d.includes('versamento') || d.includes('bonifico in entrata') || d.includes('accredito')) return 'versamento';
-    if (d.includes('prelievo') || d.includes('bonifico in uscita')) return 'prelievo';
-    if (d.includes('commissione') || d.includes('costo') || d.includes('bollo') || d.includes('tassa')) return 'costo';
-    if (d.includes('dividendo') || d.includes('cedola')) return 'dividendo';
-    if (d.includes('acquist') || d.includes('vendit') || d.includes('sottoscrizione') || isin) return 'titolo';
-    return 'altro';
-}
+    <!-- File Input Nascosti -->
+    <input type="file" id="contoFileInput" accept=".xlsx,.xls,.csv" class="file-input-hidden">
+    <input type="file" id="investimentiFileInput" accept=".xlsx,.xls,.csv" class="file-input-hidden">
 
-// Funzione principale per processare file investimenti
-function elaboraFileInvestimenti(rawData) {
-    console.log('=== INVESTIMENTI: Inizio elaborazione ===');
-    console.log('Righe totali:', rawData.length);
-    
-    // Mostra le prime 5 righe per debug
-    console.log('Prime 5 righe:');
-    for (let i = 0; i < Math.min(5, rawData.length); i++) {
-        console.log(`Riga ${i}:`, rawData[i]);
-    }
-    
-    // Reset
-    datiInvestimenti = { raw: [], movimenti: [], titoli: {}, patrimonioIniziale: 0, patrimonioFinale: 0 };
-    
-    // Trova la riga di intestazione
-    let headerRow = 0;
-    for (let i = 0; i < Math.min(20, rawData.length); i++) {
-        const row = rawData[i];
-        if (!row || !Array.isArray(row)) continue;
-        const text = row.map(c => String(c || '').toLowerCase()).join(' ');
-        if (text.includes('data') && (text.includes('importo') || text.includes('patrimonio') || text.includes('descrizione'))) {
-            headerRow = i;
-            break;
-        }
-    }
-    
-    const headers = rawData[headerRow].map(h => String(h || '').toLowerCase().trim());
-    console.log('Headers:', headers);
-    
-    // Mappa le colonne - cerca in modo flessibile
-    function trovaColonna(paroleChiave) {
-        for (const p of paroleChiave) {
-            const idx = headers.findIndex(h => h.includes(p));
-            if (idx >= 0) return idx;
-        }
-        return -1;
-    }
-    
-    const colData = trovaColonna(['data', 'date']);
-    const colDesc = trovaColonna(['descrizione', 'descrizion', 'dettaglio', 'operazione', 'causale', 'movimento', 'strumento']);
-    const colImporto = trovaColonna(['importo', 'amount', 'controvalore', 'valore']);
-    const colPatrimonio = trovaColonna(['patrimonio', 'saldo', 'giacenza', 'totale']);
-    const colISIN = trovaColonna(['isin', 'ticker', 'codice']);
-    const colQuantita = trovaColonna(['quantit', 'q.t', 'numero', 'pezzi', 'nominale']);
-    
-    console.log(`Mappatura: Data=${colData}, Desc=${colDesc}, Importo=${colImporto}, Patrimonio=${colPatrimonio}, ISIN=${colISIN}, Qta=${colQuantita}`);
-    
-    // Se non trovi importo, cerca colonne numeriche
-    if (colImporto === -1) {
-        console.log('Importo non trovato, cerco colonne numeriche...');
-        for (let i = 0; i < headers.length; i++) {
-            if (i === colData || i === colDesc || i === colPatrimonio) continue;
-            let countNumeri = 0;
-            for (let r = headerRow + 1; r < Math.min(headerRow + 10, rawData.length); r++) {
-                const v = rawData[r]?.[i];
-                if (v && String(v).match(/[\d,.\-()]/)) countNumeri++;
-            }
-            if (countNumeri >= 3) {
-                console.log(`Trovata colonna numerica: ${headers[i]} (indice ${i})`);
-                if (colImporto === -1) colImporto = i;
-                else if (colPatrimonio === -1) colPatrimonio = i;
-            }
-        }
-    }
-    
-    let elaborati = 0;
-    let saltati = 0;
-    
-    for (let i = headerRow + 1; i < rawData.length; i++) {
-        const row = rawData[i];
-        if (!row || !Array.isArray(row) || row.length === 0) {
-            saltati++;
-            continue;
-        }
-        
-        // Verifica che ci siano dati
-        const haDati = row.some(c => c !== '' && c !== null && c !== undefined && String(c).trim() !== '');
-        if (!haDati) {
-            saltati++;
-            continue;
-        }
-        
-        const dataStr = colData >= 0 ? String(row[colData] || '') : '';
-        const descStr = colDesc >= 0 ? String(row[colDesc] || '') : '';
-        let importo = colImporto >= 0 ? parseImportoBancario(row[colImporto]) : 0;
-        let patrimonio = colPatrimonio >= 0 ? parseImportoBancario(row[colPatrimonio]) : 0;
-        const isin = colISIN >= 0 ? String(row[colISIN] || '').trim() : '';
-        const quantita = colQuantita >= 0 ? parseImportoBancario(row[colQuantita]) : 0;
-        
-        const data = parseDate(dataStr);
-        if (!data) {
-            saltati++;
-            continue;
-        }
-        
-        const tipo = classificaMovimento(descStr, isin);
-        
-        // Debug prime righe
-        if (elaborati < 3) {
-            console.log(`Riga ${i}: data=${data}, desc=${descStr?.substring(0,40)}, importo=${importo}, patrimonio=${patrimonio}, tipo=${tipo}`);
-        }
-        
-        datiInvestimenti.raw.push({ data, desc: descStr, imp: importo, patrimonio, tipo, isin, qta: quantita });
-        
-        if (importo !== 0 || tipo === 'titolo') {
-            datiInvestimenti.movimenti.push({ data, desc: descStr, imp: importo, tipo, isin, qta: quantita });
-        }
-        
-        if (isin || (descStr && (tipo === 'titolo' || importo < -50))) {
-            const chiave = isin || descStr;
-            if (!datiInvestimenti.titoli[chiave]) {
-                datiInvestimenti.titoli[chiave] = { nome: descStr, isin, qta: 0, valore: 0, movimenti: 0 };
-            }
-            datiInvestimenti.titoli[chiave].qta += quantita;
-            datiInvestimenti.titoli[chiave].valore += Math.abs(importo);
-            datiInvestimenti.titoli[chiave].movimenti++;
-        }
-        
-        elaborati++;
-    }
-    
-    // Calcola patrimonio iniziale/finale
-    const conPatrimonio = datiInvestimenti.raw.filter(r => r.patrimonio > 0);
-    if (conPatrimonio.length > 0) {
-        conPatrimonio.sort((a, b) => a.data.localeCompare(b.data));
-        datiInvestimenti.patrimonioIniziale = conPatrimonio[0].patrimonio;
-        datiInvestimenti.patrimonioFinale = conPatrimonio[conPatrimonio.length - 1].patrimonio;
-    } else {
-        // Se non c'è patrimonio, calcola dagli importi
-        let cumulativo = 0;
-        datiInvestimenti.raw.sort((a, b) => a.data.localeCompare(b.data));
-        datiInvestimenti.raw.forEach(r => {
-            cumulativo += r.imp;
-            r.patrimonio = cumulativo;
-        });
-        if (datiInvestimenti.raw.length > 0) {
-            datiInvestimenti.patrimonioIniziale = datiInvestimenti.raw[0].patrimonio;
-            datiInvestimenti.patrimonioFinale = cumulativo;
-        }
-    }
-    
-    console.log(`Elaborati: ${elaborati}, Saltati: ${saltati}`);
-    console.log(`Movimenti: ${datiInvestimenti.movimenti.length}, Titoli: ${Object.keys(datiInvestimenti.titoli).length}`);
-    console.log(`Patrimonio: ${datiInvestimenti.patrimonioIniziale} -> ${datiInvestimenti.patrimonioFinale}`);
-    
-    return elaborati > 0;
-}
+    <div class="container">
+        <!-- ==================== HOME ==================== -->
+        <div id="homeView">
+            <div style="text-align:center;padding:60px 0;">
+                <h1 style="font-size:36px;margin-bottom:10px;">Gestisci le Tue Finanze</h1>
+                <p style="color:var(--muted);font-size:18px;margin-bottom:40px;">Analizza spese, monitora investimenti e risparmia di più</p>
+                <div class="grid-2" style="max-width:900px;margin:0 auto;">
+                    <div class="card" style="text-align:center;cursor:pointer;" onclick="navigate('conto')">
+                        <div style="font-size:48px;margin-bottom:15px;">🏦</div>
+                        <h3>Estratto Conto</h3>
+                        <p style="color:var(--muted);margin:10px 0;">Carica il tuo file bancario</p>
+                        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();document.getElementById('contoFileInput').click()">📂 Carica File</button>
+                        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();loadContoDemo()" style="margin-left:8px;">📊 Demo</button>
+                    </div>
+                    <div class="card" style="text-align:center;cursor:pointer;" onclick="navigate('investimenti')">
+                        <div style="font-size:48px;margin-bottom:15px;">📈</div>
+                        <h3>Investimenti</h3>
+                        <p style="color:var(--muted);margin:10px 0;">Portafoglio e rendimenti</p>
+                        <button class="btn btn-info btn-sm" onclick="event.stopPropagation();document.getElementById('investimentiFileInput').click()">📂 Carica File</button>
+                        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();loadInvestimentiDemo()" style="margin-left:8px;">📊 Demo</button>
+                    </div>
+                    <div class="card" style="text-align:center;cursor:pointer;" onclick="navigate('auto')">
+                        <div style="font-size:48px;margin-bottom:15px;">🚗</div>
+                        <h3>Spese Auto</h3>
+                        <p style="color:var(--muted);margin:10px 0;">Traccia carburante e manutenzione</p>
+                    </div>
+                    <div class="card" style="text-align:center;cursor:pointer;" onclick="navigate('risparmi')">
+                        <div style="font-size:48px;margin-bottom:15px;">💡</div>
+                        <h3>Analisi Risparmi</h3>
+                        <p style="color:var(--muted);margin:10px 0;">Scopri dove risparmiare</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-// Gestisce il caricamento file investimenti
-document.getElementById('investimentiFileInput').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    console.log('=== CARICAMENTO FILE INVESTIMENTI ===');
-    console.log('File:', file.name, 'Dimensione:', (file.size / 1024).toFixed(1), 'KB');
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array', cellDates: true, raw: true });
-            
-            console.log('Fogli disponibili:', workbook.SheetNames);
-            
-            const sheetName = workbook.SheetNames[0];
-            const sheet = workbook.Sheets[sheetName];
-            
-            // Estrai dati
-            const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: true });
-            
-            console.log('Dati estratti:', rawData?.length, 'righe');
-            
-            if (elaboraFileInvestimenti(rawData)) {
-                aggiornaVistaInvestimenti();
-                showView('investimenti');
-                showToast(`✅ ${datiInvestimenti.raw.length} righe elaborate!`, 'success');
-            } else {
-                showToast('⚠️ Nessun dato trovato nel file', 'warning');
-            }
-        } catch (err) {
-            console.error('ERRORE:', err);
-            showToast('Errore: ' + err.message, 'error');
+        <!-- ==================== CONTO ==================== -->
+        <div id="contoView" class="hidden">
+            <div style="text-align:center;padding:40px;" id="contoUpload">
+                <h2>📂 Carica il tuo Estratto Conto</h2>
+                <p style="color:var(--muted);margin:20px 0;">Supporta file .xlsx, .xls e .csv di qualsiasi banca italiana</p>
+                <button class="btn btn-primary" onclick="document.getElementById('contoFileInput').click()">📂 Seleziona File</button>
+                <button class="btn btn-secondary" onclick="loadContoDemo()" style="margin-left:10px;">📊 Carica Demo</button>
+            </div>
+
+            <div id="contoData" class="hidden">
+                <div class="grid-3" style="margin-bottom:30px;">
+                    <div class="kpi-card">
+                        <div style="color:var(--muted);font-size:12px;text-transform:uppercase;">💰 Saldo Netto</div>
+                        <div style="font-size:32px;font-weight:700;" id="saldoCorrente">€0,00</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="color:var(--muted);font-size:12px;text-transform:uppercase;">📈 Entrate Totali</div>
+                        <div style="font-size:32px;font-weight:700;color:var(--accent);" id="entrateTotali">€0,00</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="color:var(--muted);font-size:12px;text-transform:uppercase;">📉 Uscite Totali</div>
+                        <div style="font-size:32px;font-weight:700;color:var(--danger);" id="usciteTotali">€0,00</div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>📊 Andamento Mensile</h3>
+                        <div class="chart-container"><canvas id="trendChart"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <h3>🥧 Uscite per Categoria</h3>
+                        <div class="chart-container"><canvas id="categoryChart"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:20px;">
+                    <h3>📋 Transazioni</h3>
+                    <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;">
+                        <input type="text" id="searchTransactions" placeholder="🔍 Cerca..." style="width:200px;">
+                        <select id="categoryFilter" style="width:180px;"><option value="">Tutte le categorie</option></select>
+                    </div>
+                    <div style="overflow-x:auto;max-height:500px;overflow-y:auto;">
+                        <table>
+                            <thead><tr><th>Data</th><th>Descrizione</th><th>Categoria</th><th>Importo</th><th>Tipo</th></tr></thead>
+                            <tbody id="transactionsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== INVESTIMENTI ==================== -->
+        <div id="investimentiView" class="hidden">
+            <div style="text-align:center;padding:40px;" id="investimentiUpload">
+                <h2>📈 Carica il tuo File Investimenti</h2>
+                <p style="color:var(--muted);margin:20px 0;">
+                    Supporta file <b>.xlsx, .xls e .csv</b><br>
+                    Formati supportati: Fineco, Directa, Degiro, Trade Republic
+                </p>
+                <button class="btn btn-info" onclick="document.getElementById('investimentiFileInput').click()">📂 Seleziona File</button>
+                <button class="btn btn-secondary" onclick="loadInvestimentiDemo()" style="margin-left:10px;">📊 Carica Demo</button>
+            </div>
+
+            <div id="investimentiData" class="hidden">
+                <div class="grid-3" style="margin-bottom:30px;">
+                    <div class="kpi-card">
+                        <div style="color:var(--muted);font-size:12px;">💎 Patrimonio Attuale</div>
+                        <div style="font-size:32px;font-weight:700;color:var(--accent);" id="patrimonioTotale">€0,00</div>
+                        <div style="font-size:11px;color:var(--muted);margin-top:5px;" id="patrimonioSub"></div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="color:var(--muted);font-size:12px;">📊 Rendimento Totale</div>
+                        <div style="font-size:32px;font-weight:700;" id="rendimentoTotale">0%</div>
+                        <div style="font-size:11px;color:var(--muted);margin-top:5px;" id="rendimentoSub"></div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="color:var(--muted);font-size:12px;">💸 Costi/Commissioni</div>
+                        <div style="font-size:32px;font-weight:700;color:var(--danger);" id="costiTotali">€0,00</div>
+                        <div style="font-size:11px;color:var(--muted);margin-top:5px;" id="costiSub"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>📈 Andamento Patrimonio</h3>
+                    <div class="chart-container"><canvas id="patrimonioChart"></canvas></div>
+                </div>
+
+                <div class="grid-2" style="margin-top:20px;">
+                    <div class="card">
+                        <h3>🥧 Composizione Portafoglio</h3>
+                        <div class="chart-container"><canvas id="composizioneChart"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <h3>📊 Dettaglio Strumenti</h3>
+                        <div id="dettaglioTitoli" style="max-height:300px;overflow-y:auto;"></div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:20px;">
+                    <div class="nav-tabs">
+                        <button class="nav-tab active" onclick="switchInvestimentiTab('movimenti')">📋 Movimenti</button>
+                        <button class="nav-tab" onclick="switchInvestimentiTab('portafoglio')">💼 Portafoglio</button>
+                        <button class="nav-tab" onclick="switchInvestimentiTab('giornaliero')">📅 Giornaliero</button>
+                    </div>
+
+                    <div id="tabInvestimentiMovimenti">
+                        <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;">
+                            <input type="text" id="searchMovimenti" placeholder="🔍 Cerca..." style="width:200px;">
+                            <select id="filterTipoMovimento" style="width:160px;">
+                                <option value="">Tutti i tipi</option>
+                                <option value="versamento">Versamenti</option>
+                                <option value="prelievo">Prelievi</option>
+                                <option value="costo">Costi</option>
+                                <option value="titolo">Titoli</option>
+                                <option value="dividendo">Dividendi</option>
+                            </select>
+                            <span style="color:var(--muted);font-size:12px;align-self:center;" id="movimentiCount"></span>
+                        </div>
+                        <div style="overflow-x:auto;max-height:400px;overflow-y:auto;">
+                            <table>
+                                <thead><tr><th>Data</th><th>Descrizione</th><th>Tipo</th><th>Importo</th><th>ISIN/Ticker</th><th>Quantità</th></tr></thead>
+                                <tbody id="investimentiMovimentiBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="tabInvestimentiPortafoglio" class="hidden">
+                        <div style="overflow-x:auto;max-height:400px;overflow-y:auto;">
+                            <table>
+                                <thead><tr><th>Strumento</th><th>ISIN</th><th>Quantità</th><th>Valore</th><th>Operazioni</th><th>%</th></tr></thead>
+                                <tbody id="investimentiPortafoglioBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="tabInvestimentiGiornaliero" class="hidden">
+                        <div style="overflow-x:auto;max-height:400px;overflow-y:auto;">
+                            <table>
+                                <thead><tr><th>Data</th><th>Descrizione</th><th>Importo</th><th>Patrimonio</th><th>Tipo</th></tr></thead>
+                                <tbody id="investimentiGiornalieroBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== AUTO ==================== -->
+        <div id="autoView" class="hidden">
+            <h2 style="margin-bottom:30px;">🚗 Gestione Spese Auto</h2>
+            <div class="card">
+                <h3>➕ Nuova Spesa</h3>
+                <div class="grid-4" style="gap:15px;margin-top:15px;">
+                    <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Data</label><input type="date" id="autoData"></div>
+                    <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Tipo</label>
+                        <select id="autoTipo">
+                            <option>Carburante</option><option>Manutenzione</option><option>Assicurazione</option>
+                            <option>Bollo</option><option>Pedaggi</option><option>Parcheggi</option>
+                            <option>Lavaggio</option><option>Altro</option>
+                        </select>
+                    </div>
+                    <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Importo (€)</label><input type="number" id="autoImporto" step="0.01" placeholder="0.00"></div>
+                    <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Km percorsi</label><input type="number" id="autoKm" placeholder="0"></div>
+                </div>
+                <div style="margin-top:15px;"><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Note</label><input type="text" id="autoNote" placeholder="Note opzionali..."></div>
+                <button class="btn btn-warning" onclick="aggiungiSpesaAuto()" style="margin-top:15px;">➕ Aggiungi Spesa</button>
+            </div>
+
+            <div class="grid-3" style="margin-top:20px;">
+                <div class="kpi-card"><div style="color:var(--muted);font-size:12px;">⛽ Carburante</div><div style="font-size:28px;font-weight:700;color:var(--warning);" id="spesaCarburante">€0,00</div></div>
+                <div class="kpi-card"><div style="color:var(--muted);font-size:12px;">🔧 Manutenzione</div><div style="font-size:28px;font-weight:700;color:var(--info);" id="spesaManutenzione">€0,00</div></div>
+                <div class="kpi-card"><div style="color:var(--muted);font-size:12px;">💰 Totale Auto</div><div style="font-size:28px;font-weight:700;color:var(--danger);" id="spesaTotaleAuto">€0,00</div></div>
+            </div>
+
+            <div class="card" style="margin-top:20px;">
+                <h3>📋 Storico Spese Auto</h3>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead><tr><th>Data</th><th>Tipo</th><th>Importo</th><th>Km</th><th>Note</th><th></th></tr></thead>
+                        <tbody id="autoSpeseBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== RISPARMI ==================== -->
+        <div id="risparmiView" class="hidden">
+            <h2 style="margin-bottom:30px;">💡 Analisi e Suggerimenti per Risparmiare</h2>
+            <div class="card">
+                <h3>Analisi delle Tue Abitudini di Spesa</h3>
+                <div id="analisiRisparmi" style="margin-top:20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== STATO GLOBALE ====================
+        let transazioni = [];
+        let datiInvestimenti = { raw: [], movimenti: [], titoli: {}, patrimonioIniziale: 0, patrimonioFinale: 0 };
+        let speseAuto = JSON.parse(localStorage.getItem('speseAuto') || '[]');
+        let trendChart = null, categoryChart = null, patrimonioChart = null, composizioneChart = null;
+        let currentView = 'home';
+
+        // ==================== UTILITY ====================
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'background:#1a3e1a;border:1px solid #2a5e2a;color:#00c853;',
+                error: 'background:#3e1a1a;border:1px solid #5e2a2a;color:#ff5252;',
+                warning: 'background:#3e3a1a;border:1px solid #5e5a2a;color:#ffd740;',
+                info: 'background:#1a2e3e;border:1px solid #2a4e5e;color:#4fc3f7;'
+            };
+            toast.style.cssText = (colors[type] || colors.success) + 'padding:14px 20px;border-radius:12px;animation:slideIn 0.3s ease;';
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
         }
-    };
-    reader.readAsArrayBuffer(file);
-});
 
-// Demo investimenti
-function loadInvestimentiDemo() {
-    const demo = [
-        ['Data', 'Descrizione', 'Importo', 'Patrimonio', 'ISIN', 'Quantità'],
-        ['2024-01-01', 'Saldo iniziale', 0, 10000, '', 0],
-        ['2024-01-15', 'Versamento', 500, 10500, '', 0],
-        ['2024-02-01', 'Acquisto ETF MSCI World', -1000, 9500, 'IE00B4L5Y983', 15],
-        ['2024-02-15', 'Commissioni', -2.50, 9497.50, '', 0],
-        ['2024-03-01', 'Versamento', 1000, 10497.50, '', 0],
-        ['2024-03-15', 'Acquisto BTP Italia', -2000, 8497.50, 'IT0005496773', 2000],
-        ['2024-04-01', 'Commissioni', -2.50, 8495, '', 0],
-        ['2024-04-15', 'Dividendi ETF', 35, 8530, '', 0],
-        ['2024-05-01', 'Versamento', 1000, 9530, '', 0],
-        ['2024-05-15', 'Acquisto Azioni ENEL', -500, 9030, 'IT0003128367', 80],
-    ];
-    
-    if (elaboraFileInvestimenti(demo)) {
-        aggiornaVistaInvestimenti();
-        showView('investimenti');
-        showToast('✅ Demo investimenti caricata!', 'success');
-    }
-}
-
-// Aggiorna la vista investimenti
-function aggiornaVistaInvestimenti() {
-    if (datiInvestimenti.raw.length === 0) {
-        showToast('Nessun dato da mostrare', 'warning');
-        return;
-    }
-    
-    document.getElementById('investimentiUpload').classList.add('hidden');
-    document.getElementById('investimentiData').classList.remove('hidden');
-    
-    // KPI
-    const pf = datiInvestimenti.patrimonioFinale;
-    const pi = datiInvestimenti.patrimonioIniziale;
-    const rendimento = pi > 0 ? ((pf - pi) / pi * 100) : 0;
-    const costi = datiInvestimenti.movimenti
-        .filter(m => m.tipo === 'costo')
-        .reduce((s, m) => s + Math.abs(m.imp), 0);
-    
-    document.getElementById('patrimonioTotale').textContent = formatCurrency(pf);
-    document.getElementById('patrimonioSub').textContent = `${datiInvestimenti.raw.length} rilevazioni`;
-    
-    const rendEl = document.getElementById('rendimentoTotale');
-    rendEl.textContent = (rendimento >= 0 ? '+' : '') + rendimento.toFixed(2) + '%';
-    rendEl.style.color = rendimento >= 0 ? 'var(--accent)' : 'var(--danger)';
-    document.getElementById('rendimentoSub').textContent = `Da ${formatCurrency(pi)}`;
-    
-    document.getElementById('costiTotali').textContent = formatCurrency(costi);
-    document.getElementById('costiSub').textContent = `${datiInvestimenti.movimenti.filter(m => m.tipo === 'costo').length} costi`;
-    
-    // Mostra tab movimenti di default
-    document.getElementById('tabInvestimentiMovimenti').classList.remove('hidden');
-    document.getElementById('tabInvestimentiPortafoglio').classList.add('hidden');
-    document.getElementById('tabInvestimentiGiornaliero').classList.add('hidden');
-    
-    // Aggiorna tutto
-    aggiornaPatrimonioChart();
-    aggiornaComposizioneChart();
-    aggiornaDettaglioTitoli();
-    aggiornaTabellaMovimentiInvestimenti();
-    aggiornaTabellaPortafoglioInvestimenti();
-    aggiornaTabellaGiornalieroInvestimenti();
-}
-
-// Grafico patrimonio
-function aggiornaPatrimonioChart() {
-    const ctx = document.getElementById('patrimonioChart');
-    if (!ctx) return;
-    
-    const dati = datiInvestimenti.raw
-        .filter(r => r.patrimonio > 0 || r.imp !== 0)
-        .sort((a, b) => a.data.localeCompare(b.data));
-    
-    if (dati.length === 0) return;
-    
-    // Ricostruisci patrimonio cumulativo se necessario
-    let cumulativo = datiInvestimenti.patrimonioIniziale || 0;
-    const points = dati.map(r => {
-        cumulativo += r.imp;
-        return { data: r.data, patrimonio: r.patrimonio > 0 ? r.patrimonio : cumulativo };
-    });
-    
-    const labels = points.map(p => {
-        const d = new Date(p.data);
-        return d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
-    });
-    const values = points.map(p => p.patrimonio);
-    
-    if (patrimonioChart) patrimonioChart.destroy();
-    
-    patrimonioChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [{
-                label: 'Patrimonio',
-                data: values,
-                borderColor: '#4fc3f7',
-                backgroundColor: 'rgba(79,195,247,0.1)',
-                fill: true,
-                tension: 0.3,
-                pointRadius: values.length > 50 ? 0 : 3,
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { 
-                legend: { display: false },
-                tooltip: { 
-                    callbacks: { 
-                        label: function(ctx) { return formatCurrency(ctx.raw); }
-                    } 
+        function parseImportoBancario(valore) {
+            if (valore === null || valore === undefined || valore === '') return 0;
+            if (typeof valore === 'number') return valore;
+            let str = String(valore).trim();
+            str = str.replace(/[€\u20AC]/g, '').replace(/\s/g, '');
+            if (/^\(.*\)$/.test(str)) str = '-' + str.slice(1, -1);
+            if (str.endsWith('-')) str = '-' + str.slice(0, -1);
+            if (str.endsWith('+')) str = str.slice(0, -1);
+            if (str.includes('.') && str.includes(',')) {
+                str = str.replace(/\./g, '').replace(',', '.');
+            } else if (str.includes(',') && !str.includes('.')) {
+                const parti = str.split(',');
+                if (parti.length === 2 && parti[1].length <= 2 && /^\d+$/.test(parti[1])) {
+                    str = str.replace(',', '.');
+                } else {
+                    str = str.replace(/,/g, '');
                 }
-            },
-            scales: {
-                x: { 
-                    ticks: { color: '#8a9e8a', maxTicksLimit: 12 },
-                    grid: { color: '#1a2e1a' }
-                },
-                y: { 
-                    ticks: { color: '#8a9e8a', callback: v => formatCurrencyShort(v) },
-                    grid: { color: '#1a2e1a' }
-                }
             }
+            str = str.replace(/[^0-9.\-]/g, '').replace(/--/g, '-');
+            const num = parseFloat(str);
+            return isNaN(num) ? 0 : num;
         }
-    });
-}
 
-// Grafico composizione
-function aggiornaComposizioneChart() {
-    const ctx = document.getElementById('composizioneChart');
-    if (!ctx) return;
-    
-    const titoli = Object.values(datiInvestimenti.titoli);
-    const totTitoli = titoli.reduce((s, t) => s + Math.abs(t.valore), 0);
-    const liquidita = Math.max(0, (datiInvestimenti.patrimonioFinale || 0) - totTitoli);
-    
-    if (titoli.length === 0 && liquidita <= 0) {
-        if (composizioneChart) composizioneChart.destroy();
-        composizioneChart = null;
-        return;
-    }
-    
-    const labels = [];
-    const data = [];
-    const colors = ['#4fc3f7', '#00c853', '#ffd740', '#ff5252', '#ab47bc', '#ff7043', '#26a69a', '#5c6bc0'];
-    
-    titoli.forEach((t, i) => {
-        labels.push((t.nome || t.isin || 'Titolo').substring(0, 25));
-        data.push(Math.abs(t.valore));
-    });
-    
-    if (liquidita > 100) {
-        labels.push('Liquidità');
-        data.push(liquidita);
-    }
-    
-    if (composizioneChart) composizioneChart.destroy();
-    
-    composizioneChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels,
-            datasets: [{
-                data,
-                backgroundColor: colors.slice(0, labels.length),
-                borderWidth: 2,
-                borderColor: '#111811'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: { color: '#e0e8e0', font: { size: 10 } }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(ctx) {
-                            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                            const pct = total > 0 ? ((ctx.raw / total) * 100).toFixed(1) : 0;
-                            return `${ctx.label}: ${formatCurrency(ctx.raw)} (${pct}%)`;
-                        }
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+        }
+
+        function formatCurrencyShort(amount) {
+            if (Math.abs(amount) >= 1000000) return '€' + (amount / 1000000).toFixed(2) + 'M';
+            if (Math.abs(amount) >= 1000) return '€' + (amount / 1000).toFixed(2) + 'K';
+            return formatCurrency(amount);
+        }
+
+        function parseDate(valore) {
+            if (!valore) return '';
+            if (valore instanceof Date && !isNaN(valore)) {
+                return valore.getFullYear() + '-' + String(valore.getMonth()+1).padStart(2,'0') + '-' + String(valore.getDate()).padStart(2,'0');
+            }
+            const str = String(valore).trim();
+            if (/^\d{5}$/.test(str)) {
+                const d = new Date((parseInt(str) - 25569) * 86400 * 1000);
+                if (!isNaN(d.getTime())) return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+            }
+            let m = str.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+            if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+            m = str.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/);
+            if (m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+            return str;
+        }
+
+        function navigate(view) {
+            currentView = view;
+            ['homeView','contoView','investimentiView','autoView','risparmiView'].forEach(v => {
+                const el = document.getElementById(v);
+                if (el) el.classList.add('hidden');
+            });
+            const ve = document.getElementById(view + 'View');
+            if (ve) ve.classList.remove('hidden');
+            const titles = { home: 'Dashboard Finanziaria', conto: 'Estratto Conto', investimenti: 'Investimenti', auto: 'Spese Auto', risparmi: 'Analisi Risparmi' };
+            document.getElementById('pageTitle').textContent = titles[view] || '';
+            if (view === 'auto') aggiornaVistaAuto();
+            if (view === 'risparmi') aggiornaAnalisiRisparmi();
+        }
+
+        // ==================== CATEGORIZZAZIONE CONTO ====================
+        function categorizzaTransazione(descrizione) {
+            if (!descrizione) return 'Altro';
+            const d = descrizione.toLowerCase();
+            const categorie = {
+                'Stipendio': ['stipendio', 'salario', 'accredito stipendio', 'emolumenti'],
+                'Affitto/Mutuo': ['affitto', 'mutuo', 'canone', 'locazione'],
+                'Utenze': ['bolletta', 'enel', 'gas', 'acqua', 'telecom', 'vodafone', 'wind', 'tim'],
+                'Alimentari': ['supermercato', 'alimentari', 'conad', 'coop', 'esselunga', 'carrefour', 'lidl', 'eurospin'],
+                'Trasporti': ['benzina', 'carburante', 'diesel', 'autostrada', 'pedaggio'],
+                'Ristorazione': ['ristorante', 'pizzeria', 'bar', 'caffè', 'pub', 'take away', 'delivery'],
+                'Shopping': ['amazon', 'zalando', 'ebay', 'negozio', 'abbigliamento'],
+                'Salute': ['farmacia', 'medico', 'ospedale', 'dentista'],
+                'Intrattenimento': ['netflix', 'spotify', 'cinema', 'sky', 'dazn', 'prime video'],
+                'Assicurazioni': ['assicurazione', 'polizza', 'rc auto'],
+                'Banca': ['commissione', 'bollo', 'canone conto', 'imposta di bollo'],
+                'Investimenti': ['pac', 'etf', 'fondo', 'investimento', 'trading'],
+                'Auto': ['auto', 'gomme', 'tagliando', 'revisione', 'meccanico']
+            };
+            for (const [cat, keywords] of Object.entries(categorie)) {
+                if (keywords.some(kw => d.includes(kw))) return cat;
+            }
+            return 'Altro';
+        }
+
+        // ==================== CONTO ====================
+        function processContoData(rawData) {
+            if (!Array.isArray(rawData) || rawData.length === 0) return false;
+            
+            let headerRow = 0;
+            const keywords = ['data', 'descrizione', 'importo', 'dettagli', 'causale', 'valuta'];
+            for (let i = 0; i < Math.min(rawData.length, 20); i++) {
+                const row = rawData[i];
+                if (!Array.isArray(row)) continue;
+                const text = row.map(c => String(c || '').toLowerCase()).join(' ');
+                if (keywords.filter(kw => text.includes(kw)).length >= 2) { headerRow = i; break; }
+            }
+            
+            const headers = rawData[headerRow].map(h => String(h || '').trim());
+            let colData = -1, colDesc = -1, colImporto = -1;
+            
+            for (let i = 0; i < headers.length; i++) {
+                const h = headers[i].toLowerCase();
+                if (colData === -1 && h.includes('data')) colData = i;
+                if (colDesc === -1 && (h.includes('descrizione') || h.includes('dettagli') || h.includes('causale') || h.includes('operazione'))) colDesc = i;
+                if (colImporto === -1 && h.includes('importo')) colImporto = i;
+            }
+            
+            transazioni = [];
+            for (let i = headerRow + 1; i < rawData.length; i++) {
+                const row = rawData[i];
+                if (!Array.isArray(row) || row.length === 0) continue;
+                const hasData = row.some(c => c !== '' && c !== null && c !== undefined);
+                if (!hasData) continue;
+                
+                const rowText = row.map(c => String(c || '').toLowerCase()).join(' ');
+                if (rowText.includes('totale') || rowText.includes('riepilogo') || rowText.includes('saldo iniziale')) continue;
+                
+                const dataStr = colData >= 0 ? String(row[colData] || '') : '';
+                const descStr = colDesc >= 0 ? String(row[colDesc] || '') : '';
+                let importo = colImporto >= 0 ? parseImportoBancario(row[colImporto]) : 0;
+                
+                if (importo === 0 && colImporto === -1) {
+                    for (let j = 0; j < row.length; j++) {
+                        if (j === colData || j === colDesc) continue;
+                        const val = parseImportoBancario(row[j]);
+                        if (val !== 0) { importo = val; break; }
                     }
                 }
+                
+                const data = parseDate(dataStr);
+                if (!data) continue;
+                
+                transazioni.push({ data, descrizione: descStr || 'N/D', importo, categoria: categorizzaTransazione(descStr) });
+            }
+            
+            transazioni.sort((a, b) => a.data.localeCompare(b.data));
+            return transazioni.length > 0;
+        }
+
+        function loadContoDemo() {
+            const demo = [
+                ['Data contabile', 'Descrizione operazione', 'Importo (€)'],
+                ['05/01/2024', 'ACCREDITO STIPENDIO GENNAIO', '2.500,00'],
+                ['10/01/2024', 'AFFITTO GENNAIO', '800,00-'],
+                ['12/01/2024', 'SUPERMERCATO CONAD', '156,30-'],
+                ['15/01/2024', 'BOLLETTA ENEL ENERGIA', '89,50-'],
+                ['18/01/2024', 'BENZINA Q8 SELF', '65,00-'],
+                ['20/01/2024', 'RISTORANTE DA MARIO', '45,00-'],
+                ['22/01/2024', 'AMAZON PRIME SHOPPING', '34,99-'],
+                ['25/01/2024', 'NETFLIX MENSILE', '12,99-'],
+                ['05/02/2024', 'ACCREDITO STIPENDIO FEBBRAIO', '2.500,00'],
+                ['10/02/2024', 'AFFITTO FEBBRAIO', '800,00-'],
+                ['12/02/2024', 'SPESA ESSELUNGA', '198,75-'],
+                ['15/02/2024', 'BOLLETTA GAS', '120,00-'],
+                ['05/03/2024', 'ACCREDITO STIPENDIO MARZO', '2.500,00'],
+                ['10/03/2024', 'AFFITTO MARZO', '800,00-'],
+                ['12/03/2024', 'LIDL SPESA', '112,40-'],
+                ['28/03/2024', 'ASSICURAZIONE AUTO RCA', '450,00-'],
+            ];
+            processContoData(demo);
+            aggiornaVistaConto();
+            navigate('conto');
+            showToast('✅ Demo conto caricata!', 'success');
+        }
+
+        function aggiornaVistaConto() {
+            if (transazioni.length === 0) return;
+            document.getElementById('contoUpload').classList.add('hidden');
+            document.getElementById('contoData').classList.remove('hidden');
+            
+            const entrate = transazioni.filter(t => t.importo > 0);
+            const uscite = transazioni.filter(t => t.importo < 0);
+            const totEntrate = entrate.reduce((s, t) => s + t.importo, 0);
+            const totUscite = uscite.reduce((s, t) => s + Math.abs(t.importo), 0);
+            const saldo = totEntrate - totUscite;
+            
+            document.getElementById('saldoCorrente').textContent = formatCurrency(saldo);
+            document.getElementById('saldoCorrente').style.color = saldo >= 0 ? 'var(--accent)' : 'var(--danger)';
+            document.getElementById('entrateTotali').textContent = formatCurrency(totEntrate);
+            document.getElementById('usciteTotali').textContent = formatCurrency(totUscite);
+            
+            aggiornaTrendChart();
+            aggiornaCategoryChart();
+            aggiornaTabellaTransazioni();
+            popolaFiltriCategoria();
+        }
+
+        function aggiornaTrendChart() {
+            const ctx = document.getElementById('trendChart')?.getContext('2d');
+            if (!ctx) return;
+            const monthly = {};
+            transazioni.forEach(t => {
+                const m = t.data.substring(0, 7);
+                if (!monthly[m]) monthly[m] = { e: 0, u: 0 };
+                if (t.importo > 0) monthly[m].e += t.importo;
+                else monthly[m].u += Math.abs(t.importo);
+            });
+            const months = Object.keys(monthly).sort();
+            const mn = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+            const labels = months.map(m => `${mn[parseInt(m.split('-')[1])-1]} ${m.split('-')[0]}`);
+            if (trendChart) trendChart.destroy();
+            trendChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Entrate', data: months.map(m => monthly[m].e), backgroundColor: 'rgba(0,200,83,0.6)', borderColor: '#00c853', borderWidth: 1 },
+                        { label: 'Uscite', data: months.map(m => monthly[m].u), backgroundColor: 'rgba(255,82,82,0.6)', borderColor: '#ff5252', borderWidth: 1 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#e0e8e0' } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${formatCurrency(c.raw)}` } } },
+                    scales: { x: { ticks: { color: '#8a9e8a' }, grid: { color: '#1a2e1a' } }, y: { ticks: { color: '#8a9e8a', callback: v => formatCurrencyShort(v) }, grid: { color: '#1a2e1a' } } }
+                }
+            });
+        }
+
+        function aggiornaCategoryChart() {
+            const ctx = document.getElementById('categoryChart')?.getContext('2d');
+            if (!ctx) return;
+            const uscite = transazioni.filter(t => t.importo < 0);
+            const cats = {};
+            uscite.forEach(t => { cats[t.categoria] = (cats[t.categoria] || 0) + Math.abs(t.importo); });
+            const sorted = Object.entries(cats).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            const colors = ['#ff5252','#ff7043','#ffa726','#ffca28','#66bb6a','#26a69a','#42a5f5','#5c6bc0','#ab47bc','#ec407a'];
+            if (categoryChart) categoryChart.destroy();
+            categoryChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: sorted.map(([c]) => c), datasets: [{ data: sorted.map(([,a]) => a), backgroundColor: colors.slice(0, sorted.length), borderWidth: 2, borderColor: '#111811' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#e0e8e0', font: { size: 10 } } }, tooltip: { callbacks: { label: c => `${c.label}: ${formatCurrency(c.raw)}` } } } }
+            });
+        }
+
+        function aggiornaTabellaTransazioni(fTesto = '', fCat = '') {
+            let filtrate = transazioni;
+            if (fTesto) { const s = fTesto.toLowerCase(); filtrate = filtrate.filter(t => t.descrizione.toLowerCase().includes(s) || t.categoria.toLowerCase().includes(s)); }
+            if (fCat) filtrate = filtrate.filter(t => t.categoria === fCat);
+            document.getElementById('transactionsBody').innerHTML = [...filtrate].reverse().map(t => `
+                <tr>
+                    <td>${new Date(t.data).toLocaleDateString('it-IT')}</td>
+                    <td>${t.descrizione}</td>
+                    <td><span class="badge badge-info">${t.categoria}</span></td>
+                    <td class="${t.importo >= 0 ? 'text-success' : 'text-danger'}">${formatCurrency(t.importo)}</td>
+                    <td><span class="badge ${t.importo >= 0 ? 'badge-success' : 'badge-danger'}">${t.importo >= 0 ? 'Entrata' : 'Uscita'}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function popolaFiltriCategoria() {
+            const cats = [...new Set(transazioni.map(t => t.categoria))].sort();
+            document.getElementById('categoryFilter').innerHTML = '<option value="">Tutte le categorie</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+
+        document.getElementById('contoFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            showToast('Analisi file in corso...', 'warning');
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array', cellDates: true, raw: true });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    let rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: true });
+                    if (!rawData || rawData.length === 0) rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                    if (processContoData(rawData)) {
+                        aggiornaVistaConto();
+                        navigate('conto');
+                        showToast(`✅ ${transazioni.length} transazioni elaborate`, 'success');
+                    } else {
+                        showToast('⚠️ Nessuna transazione trovata', 'warning');
+                    }
+                } catch (err) { showToast('Errore: ' + err.message, 'error'); }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        document.getElementById('searchTransactions').addEventListener('input', function() {
+            aggiornaTabellaTransazioni(this.value, document.getElementById('categoryFilter').value);
+        });
+        document.getElementById('categoryFilter').addEventListener('change', function() {
+            aggiornaTabellaTransazioni(document.getElementById('searchTransactions').value, this.value);
+        });
+
+        // ==================== INVESTIMENTI ====================
+        function classificaMovimentoInvestimenti(desc, isin) {
+            if (!desc) return 'altro';
+            const d = desc.toLowerCase();
+            if (d.includes('versamento') || d.includes('bonifico in entrata') || d.includes('accredito')) return 'versamento';
+            if (d.includes('prelievo') || d.includes('bonifico in uscita')) return 'prelievo';
+            if (d.includes('commissione') || d.includes('costo') || d.includes('bollo') || d.includes('tassa')) return 'costo';
+            if (d.includes('dividendo') || d.includes('cedola') || d.includes('rimborso')) return 'dividendo';
+            if (d.includes('acquist') || d.includes('vendit') || d.includes('sottoscrizione') || isin) return 'titolo';
+            return 'altro';
+        }
+
+        function processInvestimentiData(rawData) {
+            console.log('=== INVESTIMENTI: Elaborazione ===');
+            console.log('Righe totali:', rawData?.length);
+            
+            if (!Array.isArray(rawData) || rawData.length === 0) return false;
+            
+            datiInvestimenti = { raw: [], movimenti: [], titoli: {}, patrimonioIniziale: 0, patrimonioFinale: 0 };
+            
+            // Trova intestazione
+            let headerRow = 0;
+            for (let i = 0; i < Math.min(20, rawData.length); i++) {
+                const row = rawData[i];
+                if (!row || !Array.isArray(row)) continue;
+                const text = row.map(c => String(c || '').toLowerCase()).join(' ');
+                if (text.includes('data') && (text.includes('importo') || text.includes('patrimonio') || text.includes('descrizione'))) {
+                    headerRow = i;
+                    break;
+                }
+            }
+            
+            const headers = rawData[headerRow].map(h => String(h || '').toLowerCase().trim());
+            console.log('Headers:', headers);
+            
+            function trovaColonna(parole) {
+                for (const p of parole) {
+                    const idx = headers.findIndex(h => h.includes(p));
+                    if (idx >= 0) return idx;
+                }
+                return -1;
+            }
+            
+            const colData = trovaColonna(['data', 'date']);
+            const colDesc = trovaColonna(['descrizione', 'descrizion', 'dettaglio', 'operazione', 'causale', 'movimento', 'strumento']);
+            const colImporto = trovaColonna(['importo', 'amount', 'controvalore', 'valore']);
+            const colPatrimonio = trovaColonna(['patrimonio', 'saldo', 'giacenza', 'totale']);
+            const colISIN = trovaColonna(['isin', 'ticker', 'codice', 'simbolo']);
+            const colQuantita = trovaColonna(['quantit', 'q.t', 'numero', 'pezzi', 'nominale']);
+            
+            console.log(`Mappatura: Data=${colData}, Desc=${colDesc}, Importo=${colImporto}, Patrimonio=${colPatrimonio}`);
+            
+            let elaborati = 0;
+            
+            for (let i = headerRow + 1; i < rawData.length; i++) {
+                const row = rawData[i];
+                if (!row || !Array.isArray(row) || row.length === 0) continue;
+                
+                const haDati = row.some(c => c !== '' && c !== null && c !== undefined && String(c).trim() !== '');
+                if (!haDati) continue;
+                
+                const dataStr = colData >= 0 ? String(row[colData] || '') : '';
+                const descStr = colDesc >= 0 ? String(row[colDesc] || '') : '';
+                let importo = colImporto >= 0 ? parseImportoBancario(row[colImporto]) : 0;
+                let patrimonio = colPatrimonio >= 0 ? parseImportoBancario(row[colPatrimonio]) : 0;
+                const isin = colISIN >= 0 ? String(row[colISIN] || '').trim() : '';
+                const quantita = colQuantita >= 0 ? parseImportoBancario(row[colQuantita]) : 0;
+                
+                const data = parseDate(dataStr);
+                if (!data) continue;
+                
+                // Cerca importo in altre colonne se non trovato
+                if (importo === 0 && colImporto === -1) {
+                    for (let j = 0; j < row.length; j++) {
+                        if (j === colData || j === colDesc || j === colPatrimonio) continue;
+                        const val = parseImportoBancario(row[j]);
+                        if (val !== 0) { importo = val; break; }
+                    }
+                }
+                
+                // Cerca patrimonio in altre colonne se non trovato
+                if (patrimonio === 0 && colPatrimonio === -1) {
+                    for (let j = 0; j < row.length; j++) {
+                        if (j === colData || j === colDesc) continue;
+                        const val = parseImportoBancario(row[j]);
+                        if (val > 100) { patrimonio = val; break; }
+                    }
+                }
+                
+                const tipo = classificaMovimentoInvestimenti(descStr, isin);
+                
+                datiInvestimenti.raw.push({ data, desc: descStr, imp: importo, patrimonio, tipo, isin, qta: quantita });
+                
+                if (importo !== 0 || tipo === 'titolo' || tipo === 'dividendo') {
+                    datiInvestimenti.movimenti.push({ data, desc: descStr, imp: importo, tipo, isin, qta: quantita });
+                }
+                
+                if ((isin || tipo === 'titolo') && descStr) {
+                    const chiave = isin || descStr;
+                    if (!datiInvestimenti.titoli[chiave]) {
+                        datiInvestimenti.titoli[chiave] = { nome: descStr, isin, qta: 0, valore: 0, movimenti: 0 };
+                    }
+                    datiInvestimenti.titoli[chiave].qta += quantita;
+                    datiInvestimenti.titoli[chiave].valore += Math.abs(importo);
+                    datiInvestimenti.titoli[chiave].movimenti++;
+                    if (isin) datiInvestimenti.titoli[chiave].isin = isin;
+                }
+                
+                elaborati++;
+            }
+            
+            // Calcola patrimonio
+            const conPatrimonio = datiInvestimenti.raw.filter(r => r.patrimonio > 0);
+            if (conPatrimonio.length > 0) {
+                conPatrimonio.sort((a, b) => a.data.localeCompare(b.data));
+                datiInvestimenti.patrimonioIniziale = conPatrimonio[0].patrimonio;
+                datiInvestimenti.patrimonioFinale = conPatrimonio[conPatrimonio.length - 1].patrimonio;
+            } else {
+                let cumulativo = 0;
+                const sorted = [...datiInvestimenti.raw].sort((a, b) => a.data.localeCompare(b.data));
+                sorted.forEach(r => { cumulativo += r.imp; r.patrimonio = cumulativo; });
+                datiInvestimenti.raw = sorted;
+                if (sorted.length > 0) {
+                    datiInvestimenti.patrimonioIniziale = sorted[0].patrimonio;
+                    datiInvestimenti.patrimonioFinale = cumulativo;
+                }
+            }
+            
+            console.log(`Elaborati: ${elaborati}, Movimenti: ${datiInvestimenti.movimenti.length}, Titoli: ${Object.keys(datiInvestimenti.titoli).length}`);
+            return elaborati > 0;
+        }
+
+        document.getElementById('investimentiFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            showToast('Analisi file investimenti...', 'info');
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array', cellDates: true, raw: true });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    let rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: true });
+                    if (!rawData || rawData.length === 0) rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                    
+                    if (processInvestimentiData(rawData)) {
+                        aggiornaVistaInvestimenti();
+                        navigate('investimenti');
+                        showToast(`✅ ${datiInvestimenti.raw.length} righe elaborate`, 'success');
+                    } else {
+                        showToast('⚠️ Nessun dato valido trovato', 'warning');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast('Errore: ' + err.message, 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function loadInvestimentiDemo() {
+            const demo = [
+                ['Data', 'Descrizione', 'Importo', 'Patrimonio', 'ISIN', 'Quantità'],
+                ['2024-01-01', 'Saldo iniziale', 0, 10000, '', 0],
+                ['2024-01-15', 'Versamento bonifico', 500, 10500, '', 0],
+                ['2024-02-01', 'Acquisto VANGUARD FTSE ALL-WORLD ETF', -1000, 9500, 'IE00BK5BQT80', 18.2],
+                ['2024-02-15', 'Commissioni di negoziazione', -2.50, 9497.50, '', 0],
+                ['2024-03-01', 'Versamento bonifico', 1000, 10497.50, '', 0],
+                ['2024-03-15', 'Acquisto ISHARES CORE MSCI EM IMI', -500, 9997.50, 'IE00BKM4GZ66', 17.2],
+                ['2024-04-01', 'Commissioni di negoziazione', -2.50, 9995, '', 0],
+                ['2024-04-15', 'Dividendi ETF World', 45, 10040, '', 0],
+                ['2024-05-01', 'Versamento bonifico', 1000, 11040, '', 0],
+                ['2024-05-15', 'Acquisto AMUNDI INDEX GLOBAL AGG', -2000, 9040, 'LU1681047348', 20],
+                ['2024-06-01', 'Commissioni di negoziazione', -2.50, 9037.50, '', 0],
+                ['2024-06-15', 'Dividendi ETF EM', 32, 9069.50, '', 0],
+            ];
+            
+            if (processInvestimentiData(demo)) {
+                aggiornaVistaInvestimenti();
+                navigate('investimenti');
+                showToast('✅ Demo investimenti caricata!', 'success');
             }
         }
-    });
-}
 
-// Dettaglio titoli
-function aggiornaDettaglioTitoli() {
-    const container = document.getElementById('dettaglioTitoli');
-    if (!container) return;
-    
-    const titoli = Object.values(datiInvestimenti.titoli);
-    const totTitoli = titoli.reduce((s, t) => s + Math.abs(t.valore), 0);
-    
-    if (titoli.length === 0) {
-        container.innerHTML = '<p style="color:var(--muted);padding:20px;">Nessuno strumento finanziario rilevato nel file.</p>';
-        return;
-    }
-    
-    container.innerHTML = titoli.map(t => {
-        const pct = totTitoli > 0 ? ((Math.abs(t.valore) / totTitoli) * 100).toFixed(1) : 0;
-        return `
-            <div style="background:#0a0e0a;border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">
-                    <strong style="font-size:12px;">${(t.nome || t.isin || 'Sconosciuto').substring(0, 35)}</strong>
-                    <span style="color:var(--accent);font-weight:600;">${formatCurrency(Math.abs(t.valore))}</span>
+        function aggiornaVistaInvestimenti() {
+            if (datiInvestimenti.raw.length === 0) return;
+            
+            document.getElementById('investimentiUpload').classList.add('hidden');
+            document.getElementById('investimentiData').classList.remove('hidden');
+            
+            const pf = datiInvestimenti.patrimonioFinale;
+            const pi = datiInvestimenti.patrimonioIniziale;
+            const rendimento = pi > 0 ? ((pf - pi) / pi * 100) : 0;
+            const costi = datiInvestimenti.movimenti.filter(m => m.tipo === 'costo').reduce((s, m) => s + Math.abs(m.imp), 0);
+            
+            document.getElementById('patrimonioTotale').textContent = formatCurrency(pf);
+            document.getElementById('patrimonioSub').textContent = `${datiInvestimenti.raw.length} rilevazioni`;
+            
+            const rendEl = document.getElementById('rendimentoTotale');
+            rendEl.textContent = (rendimento >= 0 ? '+' : '') + rendimento.toFixed(2) + '%';
+            rendEl.style.color = rendimento >= 0 ? 'var(--accent)' : 'var(--danger)';
+            document.getElementById('rendimentoSub').textContent = `Da ${formatCurrency(pi)}`;
+            
+            document.getElementById('costiTotali').textContent = formatCurrency(costi);
+            document.getElementById('costiSub').textContent = `${datiInvestimenti.movimenti.filter(m => m.tipo === 'costo').length} costi`;
+            
+            // Default: mostra tab movimenti
+            document.getElementById('tabInvestimentiMovimenti').classList.remove('hidden');
+            document.getElementById('tabInvestimentiPortafoglio').classList.add('hidden');
+            document.getElementById('tabInvestimentiGiornaliero').classList.add('hidden');
+            const tabs = document.querySelectorAll('#investimentiData .nav-tab');
+            tabs.forEach((t, i) => t.classList.toggle('active', i === 0));
+            
+            aggiornaPatrimonioChart();
+            aggiornaComposizioneChart();
+            aggiornaDettaglioTitoli();
+            aggiornaTabellaMovimentiInvestimenti();
+            aggiornaTabellaPortafoglioInvestimenti();
+            aggiornaTabellaGiornalieroInvestimenti();
+        }
+
+        function aggiornaPatrimonioChart() {
+            const ctx = document.getElementById('patrimonioChart');
+            if (!ctx) return;
+            
+            const sorted = [...datiInvestimenti.raw].sort((a, b) => a.data.localeCompare(b.data));
+            let cumulativo = 0;
+            const points = sorted.map(r => {
+                cumulativo += r.imp;
+                return {
+                    data: r.data,
+                    patrimonio: r.patrimonio > 0 ? r.patrimonio : cumulativo
+                };
+            });
+            
+            const useWeekly = points.length > 60;
+            const groups = {};
+            points.forEach(p => {
+                let key;
+                if (useWeekly) {
+                    const d = new Date(p.data);
+                    const day = d.getDay();
+                    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+                    const mon = new Date(d.getFullYear(), d.getMonth(), diff);
+                    key = mon.toISOString().split('T')[0];
+                } else {
+                    key = p.data;
+                }
+                groups[key] = p.patrimonio;
+            });
+            
+            const keys = Object.keys(groups).sort();
+            const labels = keys.map(k => new Date(k).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }));
+            const values = keys.map(k => groups[k]);
+            
+            if (patrimonioChart) patrimonioChart.destroy();
+            patrimonioChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Patrimonio',
+                        data: values,
+                        borderColor: '#4fc3f7',
+                        backgroundColor: 'rgba(79,195,247,0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: values.length > 50 ? 0 : 3,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => formatCurrency(c.raw) } } },
+                    scales: { x: { ticks: { color: '#8a9e8a', maxTicksLimit: 12 }, grid: { color: '#1a2e1a' } }, y: { ticks: { color: '#8a9e8a', callback: v => formatCurrencyShort(v) }, grid: { color: '#1a2e1a' } } }
+                }
+            });
+        }
+
+        function aggiornaComposizioneChart() {
+            const ctx = document.getElementById('composizioneChart');
+            if (!ctx) return;
+            
+            const titoli = Object.values(datiInvestimenti.titoli);
+            const totTitoli = titoli.reduce((s, t) => s + Math.abs(t.valore), 0);
+            const liquidita = Math.max(0, (datiInvestimenti.patrimonioFinale || 0) - totTitoli);
+            
+            const labels = titoli.map(t => (t.nome || t.isin || 'Titolo').substring(0, 25));
+            const data = titoli.map(t => Math.abs(t.valore));
+            const colors = ['#4fc3f7', '#00c853', '#ffd740', '#ff5252', '#ab47bc', '#ff7043', '#26a69a', '#5c6bc0'];
+            
+            if (liquidita > 100) { labels.push('Liquidità'); data.push(liquidita); }
+            
+            if (composizioneChart) composizioneChart.destroy();
+            composizioneChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, labels.length), borderWidth: 2, borderColor: '#111811' }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { color: '#e0e8e0', font: { size: 10 } } }, tooltip: { callbacks: { label: c => `${c.label}: ${formatCurrency(c.raw)}` } } }
+                }
+            });
+        }
+
+        function aggiornaDettaglioTitoli() {
+            const container = document.getElementById('dettaglioTitoli');
+            if (!container) return;
+            const titoli = Object.values(datiInvestimenti.titoli);
+            const totTitoli = titoli.reduce((s, t) => s + Math.abs(t.valore), 0);
+            
+            container.innerHTML = titoli.length > 0 ? titoli.map(t => {
+                const pct = totTitoli > 0 ? ((Math.abs(t.valore) / totTitoli) * 100).toFixed(1) : 0;
+                return `
+                    <div style="background:#0a0e0a;border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">
+                            <strong style="font-size:12px;">${(t.nome || t.isin || 'Sconosciuto').substring(0, 35)}</strong>
+                            <span style="color:var(--accent);font-weight:600;">${formatCurrency(Math.abs(t.valore))}</span>
+                        </div>
+                        <div style="font-size:10px;color:var(--muted);margin-top:3px;">${t.isin ? 'ISIN: ' + t.isin + ' | ' : ''}${t.movimenti} op. | Q.tà: ${t.qta || 'N/D'}</div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:#4fc3f7;"></div></div>
+                        <div style="font-size:10px;color:var(--muted);">${pct}% del portafoglio</div>
+                    </div>
+                `;
+            }).join('') : '<p style="color:var(--muted);padding:20px;">Nessuno strumento finanziario rilevato nel file.</p>';
+        }
+
+        function switchInvestimentiTab(tab) {
+            document.getElementById('tabInvestimentiMovimenti').classList.add('hidden');
+            document.getElementById('tabInvestimentiPortafoglio').classList.add('hidden');
+            document.getElementById('tabInvestimentiGiornaliero').classList.add('hidden');
+            const tabs = document.querySelectorAll('#investimentiData .nav-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            if (tab === 'movimenti') {
+                document.getElementById('tabInvestimentiMovimenti').classList.remove('hidden');
+                if (tabs[0]) tabs[0].classList.add('active');
+            } else if (tab === 'portafoglio') {
+                document.getElementById('tabInvestimentiPortafoglio').classList.remove('hidden');
+                if (tabs[1]) tabs[1].classList.add('active');
+            } else {
+                document.getElementById('tabInvestimentiGiornaliero').classList.remove('hidden');
+                if (tabs[2]) tabs[2].classList.add('active');
+            }
+        }
+
+        function aggiornaTabellaMovimentiInvestimenti(fTesto = '', fTipo = '') {
+            let mov = [...datiInvestimenti.movimenti].reverse();
+            if (fTesto) { const s = fTesto.toLowerCase(); mov = mov.filter(m => (m.desc||'').toLowerCase().includes(s) || (m.isin||'').toLowerCase().includes(s)); }
+            if (fTipo) mov = mov.filter(m => m.tipo === fTipo);
+            document.getElementById('movimentiCount').textContent = `${mov.length} movimenti`;
+            document.getElementById('investimentiMovimentiBody').innerHTML = mov.length > 0 ? mov.map(m => `
+                <tr>
+                    <td>${new Date(m.data).toLocaleDateString('it-IT')}</td>
+                    <td>${m.desc || '-'}</td>
+                    <td><span class="badge badge-info">${m.tipo}</span></td>
+                    <td class="${m.imp >= 0 ? 'text-success' : 'text-danger'}">${m.imp !== 0 ? formatCurrency(m.imp) : '-'}</td>
+                    <td style="font-size:10px;color:var(--muted);">${m.isin || '-'}</td>
+                    <td>${m.qta || '-'}</td>
+                </tr>
+            `).join('') : '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);">Nessun movimento</td></tr>';
+        }
+
+        function aggiornaTabellaPortafoglioInvestimenti() {
+            const titoli = Object.values(datiInvestimenti.titoli);
+            const totVal = titoli.reduce((s, t) => s + Math.abs(t.valore), 0);
+            document.getElementById('investimentiPortafoglioBody').innerHTML = titoli.length > 0 ? titoli.map(t => {
+                const pct = totVal > 0 ? ((Math.abs(t.valore) / totVal) * 100).toFixed(1) : 0;
+                return `
+                    <tr>
+                        <td><strong>${(t.nome || 'Sconosciuto').substring(0, 40)}</strong></td>
+                        <td style="font-size:10px;">${t.isin || '-'}</td>
+                        <td>${t.qta || 'N/D'}</td>
+                        <td class="text-success">${formatCurrency(Math.abs(t.valore))}</td>
+                        <td>${t.movimenti}</td>
+                        <td><span>${pct}%</span></td>
+                    </tr>
+                `;
+            }).join('') : '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);">Nessun titolo in portafoglio</td></tr>';
+        }
+
+        function aggiornaTabellaGiornalieroInvestimenti() {
+            document.getElementById('investimentiGiornalieroBody').innerHTML = [...datiInvestimenti.raw].reverse().map(r => `
+                <tr>
+                    <td>${new Date(r.data).toLocaleDateString('it-IT')}</td>
+                    <td>${r.desc || '-'}</td>
+                    <td class="${r.imp >= 0 ? 'text-success' : 'text-danger'}">${r.imp !== 0 ? formatCurrency(r.imp) : '-'}</td>
+                    <td style="font-weight:600;">${r.patrimonio > 0 ? formatCurrency(r.patrimonio) : '-'}</td>
+                    <td><span class="badge badge-info">${r.tipo}</span></td>
+                </tr>
+            `).join('') || '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);">Nessun dato</td></tr>';
+        }
+
+        document.getElementById('searchMovimenti').addEventListener('input', function() {
+            aggiornaTabellaMovimentiInvestimenti(this.value, document.getElementById('filterTipoMovimento').value);
+        });
+        document.getElementById('filterTipoMovimento').addEventListener('change', function() {
+            aggiornaTabellaMovimentiInvestimenti(document.getElementById('searchMovimenti').value, this.value);
+        });
+
+        // ==================== AUTO ====================
+        function aggiungiSpesaAuto() {
+            const data = document.getElementById('autoData').value;
+            const tipo = document.getElementById('autoTipo').value;
+            const importo = parseFloat(document.getElementById('autoImporto').value);
+            const km = parseInt(document.getElementById('autoKm').value) || 0;
+            const note = document.getElementById('autoNote').value || '';
+            if (!data || !importo || isNaN(importo)) { showToast('Compila data e importo correttamente', 'error'); return; }
+            speseAuto.push({ id: Date.now(), data, tipo, importo: Math.abs(importo), km, note });
+            speseAuto.sort((a, b) => b.data.localeCompare(a.data));
+            localStorage.setItem('speseAuto', JSON.stringify(speseAuto));
+            document.getElementById('autoImporto').value = '';
+            document.getElementById('autoKm').value = '';
+            document.getElementById('autoNote').value = '';
+            aggiornaVistaAuto();
+            showToast('✅ Spesa auto aggiunta!', 'success');
+        }
+
+        function eliminaSpesaAuto(id) {
+            speseAuto = speseAuto.filter(s => s.id !== id);
+            localStorage.setItem('speseAuto', JSON.stringify(speseAuto));
+            aggiornaVistaAuto();
+            showToast('Spesa eliminata');
+        }
+
+        function aggiornaVistaAuto() {
+            const totali = {};
+            speseAuto.forEach(s => { totali[s.tipo] = (totali[s.tipo] || 0) + s.importo; });
+            document.getElementById('spesaCarburante').textContent = formatCurrency(totali['Carburante'] || 0);
+            document.getElementById('spesaManutenzione').textContent = formatCurrency(totali['Manutenzione'] || 0);
+            document.getElementById('spesaTotaleAuto').textContent = formatCurrency(speseAuto.reduce((s, sp) => s + sp.importo, 0));
+            document.getElementById('autoSpeseBody').innerHTML = speseAuto.map(s => `
+                <tr>
+                    <td>${new Date(s.data).toLocaleDateString('it-IT')}</td>
+                    <td>${s.tipo}</td>
+                    <td class="text-danger">${formatCurrency(-s.importo)}</td>
+                    <td>${s.km || '-'}</td>
+                    <td>${s.note || '-'}</td>
+                    <td><button onclick="eliminaSpesaAuto(${s.id})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;">🗑️</button></td>
+                </tr>
+            `).join('');
+        }
+
+        // ==================== RISPARMI ====================
+        function aggiornaAnalisiRisparmi() {
+            const container = document.getElementById('analisiRisparmi');
+            if (!container) return;
+            if (transazioni.length === 0) {
+                container.innerHTML = '<p style="text-align:center;padding:40px;color:var(--muted);">📊 Carica un estratto conto per visualizzare l\'analisi.</p>';
+                return;
+            }
+            const entrate = transazioni.filter(t => t.importo > 0).reduce((s, t) => s + t.importo, 0);
+            const uscite = transazioni.filter(t => t.importo < 0).reduce((s, t) => s + Math.abs(t.importo), 0);
+            const risparmio = entrate - uscite;
+            const tasso = entrate > 0 ? (risparmio / entrate * 100) : 0;
+            
+            container.innerHTML = `
+                <div class="grid-2" style="margin-bottom:20px;">
+                    <div class="kpi-card">
+                        <div style="color:var(--muted);font-size:12px;">💰 Tasso di Risparmio</div>
+                        <div style="font-size:36px;font-weight:700;color:${tasso >= 20 ? 'var(--accent)' : tasso >= 0 ? 'var(--warning)' : 'var(--danger)'};">${tasso.toFixed(1)}%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div style="color:var(--muted);font-size:12px;">💡 Risparmio Totale</div>
+                        <div style="font-size:36px;font-weight:700;color:var(--accent);">${formatCurrency(risparmio)}</div>
+                    </div>
                 </div>
-                <div style="font-size:10px;color:var(--muted);margin-top:3px;">
-                    ${t.isin ? 'ISIN: ' + t.isin + ' | ' : ''}${t.movimenti} op. | Q.tà: ${t.qta || 'N/D'}
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width:${pct}%;background:#4fc3f7;"></div>
-                </div>
-                <div style="font-size:10px;color:var(--muted);">${pct}% del portafoglio</div>
-            </div>
-        `;
-    }).join('');
-}
+                ${tasso < 20 ? '<div class="saving-tip warning"><strong>⚠️ Suggerimento:</strong> Cerca di raggiungere almeno il 20% di risparmio seguendo la regola 50-30-20 (50% necessità, 30% desideri, 20% risparmi).</div>' : '<div class="saving-tip"><strong>✅ Ottimo!</strong> Stai risparmiando più del 20%, continua così!</div>'}
+            `;
+        }
 
-// Tabella movimenti
-function aggiornaTabellaMovimentiInvestimenti(filtroTesto = '', filtroTipo = '') {
-    const tbody = document.getElementById('investimentiMovimentiBody');
-    if (!tbody) return;
-    
-    let mov = [...datiInvestimenti.movimenti].reverse();
-    if (filtroTesto) {
-        const s = filtroTesto.toLowerCase();
-        mov = mov.filter(m => (m.desc || '').toLowerCase().includes(s) || (m.isin || '').toLowerCase().includes(s));
-    }
-    if (filtroTipo) mov = mov.filter(m => m.tipo === filtroTipo);
-    
-    tbody.innerHTML = mov.length > 0 ? mov.map(m => `
-        <tr>
-            <td>${new Date(m.data).toLocaleDateString('it-IT')}</td>
-            <td>${m.desc || '-'}</td>
-            <td><span class="badge badge-info">${m.tipo}</span></td>
-            <td class="${m.imp >= 0 ? 'text-success' : 'text-danger'}">${formatCurrency(m.imp)}</td>
-            <td style="font-size:10px;color:var(--muted);">${m.isin || '-'}</td>
-            <td>${m.qta || '-'}</td>
-        </tr>
-    `).join('') : '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);">Nessun movimento</td></tr>';
-}
-
-// Tabella portafoglio
-function aggiornaTabellaPortafoglioInvestimenti() {
-    const tbody = document.getElementById('investimentiPortafoglioBody');
-    if (!tbody) return;
-    
-    const titoli = Object.values(datiInvestimenti.titoli);
-    const totVal = titoli.reduce((s, t) => s + Math.abs(t.valore), 0);
-    
-    tbody.innerHTML = titoli.length > 0 ? titoli.map(t => {
-        const pct = totVal > 0 ? ((Math.abs(t.valore) / totVal) * 100).toFixed(1) : 0;
-        return `
-            <tr>
-                <td><strong>${(t.nome || 'Sconosciuto').substring(0, 40)}</strong></td>
-                <td style="font-size:10px;">${t.isin || '-'}</td>
-                <td>${t.qta || 'N/D'}</td>
-                <td class="text-success">${formatCurrency(Math.abs(t.valore))}</td>
-                <td>${t.movimenti}</td>
-                <td><span>${pct}%</span></td>
-            </tr>
-        `;
-    }).join('') : '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);">Nessun titolo</td></tr>';
-}
-
-// Tabella giornaliero
-function aggiornaTabellaGiornalieroInvestimenti() {
-    const tbody = document.getElementById('investimentiGiornalieroBody');
-    if (!tbody) return;
-    
-    const dati = [...datiInvestimenti.raw].reverse();
-    tbody.innerHTML = dati.length > 0 ? dati.map(r => `
-        <tr>
-            <td>${new Date(r.data).toLocaleDateString('it-IT')}</td>
-            <td>${r.desc || '-'}</td>
-            <td class="${r.imp >= 0 ? 'text-success' : 'text-danger'}">${formatCurrency(r.imp)}</td>
-            <td style="font-weight:600;">${r.patrimonio > 0 ? formatCurrency(r.patrimonio) : '-'}</td>
-            <td><span class="badge badge-info">${r.tipo}</span></td>
-        </tr>
-    `).join('') : '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);">Nessun dato</td></tr>';
-}
-
-// Switch tab
-function switchInvestimentiTab(tab) {
-    document.getElementById('tabInvestimentiMovimenti').classList.add('hidden');
-    document.getElementById('tabInvestimentiPortafoglio').classList.add('hidden');
-    document.getElementById('tabInvestimentiGiornaliero').classList.add('hidden');
-    
-    const tabs = document.querySelectorAll('#investimentiData .nav-tab');
-    tabs.forEach(t => t.classList.remove('active'));
-    
-    if (tab === 'movimenti') {
-        document.getElementById('tabInvestimentiMovimenti').classList.remove('hidden');
-        if (tabs[0]) tabs[0].classList.add('active');
-    } else if (tab === 'portafoglio') {
-        document.getElementById('tabInvestimentiPortafoglio').classList.remove('hidden');
-        if (tabs[1]) tabs[1].classList.add('active');
-    } else {
-        document.getElementById('tabInvestimentiGiornaliero').classList.remove('hidden');
-        if (tabs[2]) tabs[2].classList.add('active');
-    }
-}
-
-// Event listener filtri
-document.getElementById('searchMovimenti')?.addEventListener('input', function() {
-    aggiornaTabellaMovimentiInvestimenti(this.value, document.getElementById('filterTipoMovimento')?.value || '');
-});
-
-document.getElementById('filterTipoMovimento')?.addEventListener('change', function() {
-    aggiornaTabellaMovimentiInvestimenti(document.getElementById('searchMovimenti')?.value || '', this.value);
-});
+        // ==================== INIT ====================
+        document.getElementById('autoData').value = new Date().toISOString().split('T')[0];
+        navigate('home');
+        console.log('🚀 Excel Studio pronto!');
+    </script>
+</body>
+</html>
