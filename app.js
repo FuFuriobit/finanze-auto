@@ -1,13 +1,16 @@
 // ============================================
 // CONFIGURAZIONE
 // ============================================
-const WORKER_URL = "https://my-yahoo-proxy.vegekou95-at.workers.dev/";
+const WORKER_URL = "https://my-yahoo-proxy.vegekou95-at.workers.dev";
 const AGGIORNAMENTO_INTERVALLO = 60000; // 60 secondi
 const RETRY_INTERVALLO = 30000;
 const MAX_RETRY = 10;
+const SYNC_PULL_INTERVALLO = 60000; // pull cloud ogni 60 secondi
 
 // Cache per i prezzi (persistente in localStorage)
 const CACHE_CHIAVE = "prezzi_etf_cache";
+const PORTAFOGLIO_CHIAVE = "mio_portafoglio_lotti";
+const PENDING_SYNC_CHIAVE = "mio_portafoglio_pending_sync";
 
 // ============================================
 // CONFIGURAZIONE GRAFICO
@@ -61,7 +64,50 @@ let isDarkMode = localStorage.getItem("theme_dark") === "true";
 let cachePrezzi = caricaCache();
 let aggiornamentoInCorso = false;
 let prezzoBitcoinValido = false;
-let sincronizzazioneInCorso = false;
+let saveQueue = Promise.resolve();
+let pullCloudInCorso = false;
+
+function workerUrl(path = "", params = {}) {
+    const url = new URL(path, WORKER_URL + "/");
+    Object.entries(params).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+            url.searchParams.set(key, value);
+        }
+    });
+    return url.toString();
+}
+
+function isPortafoglioValido(data) {
+    return Array.isArray(data) && data.every(item =>
+        item &&
+        typeof item.isin === "string" &&
+        typeof item.ticker === "string" &&
+        typeof item.nome === "string" &&
+        Array.isArray(item.acquisti)
+    );
+}
+
+function leggiPortafoglioLocale() {
+    try {
+        const data = JSON.parse(localStorage.getItem(PORTAFOGLIO_CHIAVE) || "[]");
+        return isPortafoglioValido(data) ? data : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function salvaPortafoglioLocale(dati, pendingSync = false) {
+    localStorage.setItem(PORTAFOGLIO_CHIAVE, JSON.stringify(dati));
+    localStorage.setItem(PENDING_SYNC_CHIAVE, pendingSync ? "1" : "0");
+}
+
+function hasPendingSync() {
+    return localStorage.getItem(PENDING_SYNC_CHIAVE) === "1";
+}
+
+function portafogliUguali(a, b) {
+    return JSON.stringify(a) === JSON.stringify(b);
+}
 
 // ============================================
 // SINCRONIZZAZIONE CON CLOUD (Cloudflare KV)
@@ -114,124 +160,138 @@ function aggiornaStatoSincronizzazione(stato, messaggio) {
     }
 }
 
-async function salvaDatiCloud(dati) {
-    if (sincronizzazioneInCorso) return false;
-    sincronizzazioneInCorso = true;
-    
-    try {
-        aggiornaStatoSincronizzazione('syncing', 'Salvataggio...');
-        console.log("☁️ Salvataggio dati su cloud...");
-        
-        const datiDaSalvare = dati || portafoglio || [];
-        if (!Array.isArray(datiDaSalvare) || datiDaSalvare.length === 0) {
-            console.log("⚠️ Nessun dato valido da salvare");
-            aggiornaStatoSincronizzazione('synced', 'Nessun dato da salvare');
+async function salvaDatiCloudImpl(dati) {
+    aggiornaStatoSincronizzazione('syncing', 'Salvataggio...');
+    console.log("☁️ Salvataggio dati su cloud...");
+
+    const datiDaSalvare = dati || portafoglio || [];
+    if (!isPortafoglioValido(datiDaSalvare) || datiDaSalvare.length === 0) {
+        console.log("⚠️ Nessun dato valido da salvare");
+        aggiornaStatoSincronizzazione('synced', 'Nessun dato da salvare');
+        return false;
+    }
+
+    const response = await fetch(workerUrl("/save"), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datiDaSalvare)
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+    if (!result.success) {
+        throw new Error(result.error || 'Errore sconosciuto');
+    }
+
+    console.log("✅ Dati salvati su cloud:", result);
+    salvaPortafoglioLocale(datiDaSalvare, false);
+    aggiornaStatoSincronizzazione('synced', `Salvati ${result.count} asset`);
+    return true;
+}
+
+function salvaDatiCloud(dati) {
+    saveQueue = saveQueue
+        .catch(() => {})
+        .then(() => salvaDatiCloudImpl(dati))
+        .catch((e) => {
+            console.error("❌ Errore salvataggio cloud:", e);
+            aggiornaStatoSincronizzazione('error', 'Errore: ' + e.message);
             return false;
-        }
-        
-        const response = await fetch(`${WORKER_URL}/save`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datiDaSalvare)
         });
-        
+    return saveQueue;
+}
+
+async function caricaDatiCloud(silent = false) {
+    try {
+        if (!silent) {
+            aggiornaStatoSincronizzazione('syncing', 'Caricamento...');
+        }
+        console.log("☁️ Caricamento dati dal cloud...");
+
+        const response = await fetch(workerUrl("/load"), { cache: "no-store" });
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            console.log("✅ Dati salvati su cloud:", result);
-            aggiornaStatoSincronizzazione('synced', `Salvati ${result.count} asset`);
-            return true;
-        } else {
-            throw new Error(result.error || 'Errore sconosciuto');
+
+        const data = await response.json();
+        if (isPortafoglioValido(data) && data.length > 0) {
+            console.log(`✅ Caricati ${data.length} asset dal cloud`);
+            if (!silent) {
+                aggiornaStatoSincronizzazione('synced', `Caricati ${data.length} asset`);
+            }
+            return data;
         }
+
+        console.log("📭 Nessun dato valido nel cloud");
+        if (!silent) {
+            aggiornaStatoSincronizzazione('synced', 'Nessun dato cloud');
+        }
+        return null;
     } catch (e) {
-        console.error("❌ Errore salvataggio cloud:", e);
-        aggiornaStatoSincronizzazione('error', 'Errore: ' + e.message);
-        return false;
-    } finally {
-        sincronizzazioneInCorso = false;
+        console.error("❌ Errore caricamento cloud:", e);
+        if (!silent) {
+            aggiornaStatoSincronizzazione('error', 'Errore caricamento');
+        }
+        return null;
     }
 }
 
-async function caricaDatiCloud() {
+async function applicaDatiCloud(datiCloud, messaggio) {
+    if (!isPortafoglioValido(datiCloud)) return false;
+    if (portafogliUguali(datiCloud, portafoglio)) return false;
+
+    portafoglio = datiCloud;
+    salvaPortafoglioLocale(portafoglio, false);
+    aggiornaTutto();
+    aggiornaStatoSincronizzazione('synced', messaggio || `Aggiornati ${datiCloud.length} asset dal cloud`);
+    return true;
+}
+
+async function pullDatiCloud(force = false) {
+    if (pullCloudInCorso || hasPendingSync()) return;
+    pullCloudInCorso = true;
+
     try {
-        aggiornaStatoSincronizzazione('syncing', 'Caricamento...');
-        console.log("☁️ Caricamento dati dal cloud...");
-        
-        const response = await fetch(`${WORKER_URL}/load`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+        const datiCloud = await caricaDatiCloud(true);
+        if (datiCloud) {
+            await applicaDatiCloud(datiCloud, force ? 'Dati aggiornati dal cloud' : undefined);
         }
-        
-        const data = await response.json();
-        
-        if (data && Array.isArray(data) && data.length > 0) {
-            console.log(`✅ Caricati ${data.length} asset dal cloud`);
-            aggiornaStatoSincronizzazione('synced', `Caricati ${data.length} asset`);
-            return data;
-        } else {
-            console.log("📭 Nessun dato nel cloud");
-            aggiornaStatoSincronizzazione('synced', 'Nessun dato cloud');
-            return null;
-        }
-    } catch (e) {
-        console.error("❌ Errore caricamento cloud:", e);
-        aggiornaStatoSincronizzazione('error', 'Errore caricamento');
-        return null;
+    } finally {
+        pullCloudInCorso = false;
     }
 }
 
 async function sincronizzaOra() {
     console.log("🔄 Sincronizzazione manuale avviata...");
-    
-    const datiLocali = JSON.parse(localStorage.getItem("mio_portafoglio_lotti") || "[]");
-    
-    if (datiLocali.length === 0) {
-        console.log("⚠️ Nessun dato locale da sincronizzare");
-        
-        const datiCloud = await caricaDatiCloud();
-        if (datiCloud && datiCloud.length > 0) {
-            portafoglio = datiCloud;
-            localStorage.setItem("mio_portafoglio_lotti", JSON.stringify(portafoglio));
+
+    const datiLocali = leggiPortafoglioLocale();
+
+    if (hasPendingSync() && datiLocali && datiLocali.length > 0) {
+        const ok = await salvaDatiCloud(datiLocali);
+        if (ok) {
             aggiornaTutto();
-            aggiornaStatoSincronizzazione('synced', 'Dati ripristinati dal cloud');
-            return;
         }
-        
-        aggiornaStatoSincronizzazione('error', 'Nessun dato da sincronizzare');
         return;
     }
-    
-    try {
-        aggiornaStatoSincronizzazione('syncing', 'Salvataggio...');
-        
-        const response = await fetch(`${WORKER_URL}/save`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datiLocali)
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            console.log(`✅ Sincronizzazione completata: ${result.count} asset salvati`);
-            aggiornaStatoSincronizzazione('synced', `Salvati ${result.count} asset`);
-        } else {
-            throw new Error(result.error || 'Errore sconosciuto');
-        }
-    } catch (e) {
-        console.error("❌ Errore sincronizzazione:", e);
-        aggiornaStatoSincronizzazione('error', 'Errore: ' + e.message);
+
+    const datiCloud = await caricaDatiCloud();
+    if (datiCloud) {
+        await applicaDatiCloud(datiCloud, 'Dati ripristinati dal cloud');
+        return;
     }
+
+    if (datiLocali && datiLocali.length > 0) {
+        const ok = await salvaDatiCloud(datiLocali);
+        if (ok) {
+            aggiornaTutto();
+        }
+        return;
+    }
+
+    aggiornaStatoSincronizzazione('error', 'Nessun dato da sincronizzare');
 }
 
 // ============================================
@@ -239,43 +299,41 @@ async function sincronizzaOra() {
 // ============================================
 async function inizializzaPortafoglio() {
     console.log("🚀 Inizializzazione portafoglio...");
-    
+
+    const datiLocali = leggiPortafoglioLocale();
     const datiCloud = await caricaDatiCloud();
-    
-    if (datiCloud && datiCloud.length > 0) {
+
+    if (hasPendingSync() && datiLocali) {
+        portafoglio = datiLocali;
+        console.log("📦 Ripristinati dati locali non sincronizzati");
+        await salvaDatiCloud(portafoglio);
+    } else if (datiCloud) {
         portafoglio = datiCloud;
-        localStorage.setItem("mio_portafoglio_lotti", JSON.stringify(portafoglio));
+        salvaPortafoglioLocale(portafoglio, false);
         console.log("📦 Usati dati dal cloud");
+    } else if (datiLocali) {
+        portafoglio = datiLocali;
+        console.log("📦 Usati dati dal localStorage");
+        await salvaDatiCloud(portafoglio);
     } else {
-        const datiLocali = localStorage.getItem("mio_portafoglio_lotti");
-        if (datiLocali) {
-            try {
-                portafoglio = JSON.parse(datiLocali);
-                console.log("📦 Usati dati dal localStorage");
-            } catch (e) {
-                portafoglio = portafoglioDefault;
-                console.log("📦 Usati dati di default");
-            }
-        } else {
-            portafoglio = portafoglioDefault;
-            console.log("📦 Usati dati di default");
-        }
-        
-        if (portafoglio.length > 0) {
-            await salvaDatiCloud(portafoglio);
-        }
+        portafoglio = portafoglioDefault;
+        console.log("📦 Usati dati di default");
+        salvaPortafoglioLocale(portafoglio, true);
+        await salvaDatiCloud(portafoglio);
     }
-    
+
     applicaTema();
     aggiornaTutto();
-    
-    setInterval(async () => {
-        console.log("🔄 Sincronizzazione periodica...");
-        const datiLocali = JSON.parse(localStorage.getItem("mio_portafoglio_lotti") || "[]");
-        if (datiLocali.length > 0) {
-            await salvaDatiCloud(datiLocali);
+
+    setInterval(() => pullDatiCloud(), SYNC_PULL_INTERVALLO);
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            pullDatiCloud(true);
         }
-    }, 300000);
+    });
+
+    window.addEventListener('focus', () => pullDatiCloud(true));
 }
 
 // ============================================
@@ -336,7 +394,7 @@ async function fetchTickerDataConRetry(ticker, range = "1d", interval = "1m", te
     }
     
     try {
-        const url = `${WORKER_URL}?ticker=${encodeURIComponent(ticker)}&range=${range}&interval=${interval}`;
+        const url = workerUrl("", { ticker, range, interval });
         console.log(`🔄 Tentativo ${tentativi + 1} per ${ticker}`);
         
         const response = await fetch(url, {
@@ -1065,8 +1123,11 @@ function spostaGiu(index) {
 }
 
 async function salvaESincronizza() {
-    localStorage.setItem("mio_portafoglio_lotti", JSON.stringify(portafoglio));
-    await salvaDatiCloud(portafoglio);
+    salvaPortafoglioLocale(portafoglio, true);
+    const ok = await salvaDatiCloud(portafoglio);
+    if (!ok) {
+        aggiornaStatoSincronizzazione('error', 'Modifica salvata solo in locale');
+    }
     aggiornaTutto();
 }
 
