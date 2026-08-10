@@ -1,7 +1,7 @@
 // ============================================
 // CONFIGURAZIONE
 // ============================================
-const WORKER_URL = "https://my-yahoo-proxy.vegekou95-at.workers.dev";
+const WORKER_URL = "https://my-yahoo-proxy.vegekou95-at.workers.dev/";
 const AGGIORNAMENTO_INTERVALLO = 60000; // 60 secondi
 const RETRY_INTERVALLO = 30000;
 const MAX_RETRY = 10;
